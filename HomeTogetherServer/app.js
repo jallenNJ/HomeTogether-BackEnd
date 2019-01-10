@@ -2,7 +2,19 @@ var createError = require('http-errors');
 var express = require('express');
 var path = require('path');
 var cookieParser = require('cookie-parser');
+const ex_session = require('express-session');
 var logger = require('morgan');
+
+
+const MongoClient = require('mongodb').MongoClient;
+
+require('dotenv').config();
+
+const url = process.env.noSqlDatabase;
+const allCollections = {};
+
+
+
 
 var indexRouter = require('./routes/index');
 var usersRouter = require('./routes/users');
@@ -37,5 +49,34 @@ app.use(function(err, req, res, next) {
   res.status(err.status || 500);
   res.render('error');
 });
+
+
+async function connectToDb(){
+
+  if(url == undefined){
+     console.log("Nosql connection string missing")
+     return;
+  }
+
+
+  try{
+    connection = await MongoClient.connect(url,{ useNewUrlParser: true });
+    const db = connection.db('home-together-nosql');
+    allCollections.households = await db.createCollection("households");
+    allCollections.users = await db.createCollection("users");
+
+    
+		//Get the collection
+     // collection = await db.createCollection("contacts");
+  } catch(ex){
+    console.log(ex);
+    console.log("Connected to only some collections");
+    return;
+  }
+
+  console.log("Connected to all collections")
+}
+
+connectToDb();
 
 module.exports = app;
