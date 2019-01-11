@@ -1,6 +1,6 @@
 var express = require('express');
 var router = express.Router();
-var bcrypt = require("bcrypt-nodejs");
+var bcrypt = require("bcrypt");
 const ex_session = require('express-session');
 
 /* GET home page. */
@@ -27,9 +27,7 @@ router.put('/login', async function(req, res, next) {
 
 
 	try{
-
-
-		var sameUser = await req.userCollection.findOne({user:username});
+		var sameUser = await req.collections.users.findOne({user:username});
 		
 		if(sameUser){
 			res.json({status:false, message: "User already exists"});
@@ -41,12 +39,15 @@ router.put('/login', async function(req, res, next) {
 
 
 
-		await req.userCollection.insertOne({user:username, pass:hash});
+		await req.collections.users.insertOne({user:username, pass:hash});
 	}catch (ex){
-		console.log(ex);
+    console.log(ex);
+    res.json({stats:false, message:"Creation failed, try again later"});
+    return;
 	}
 
-	res.json({status:true});
+  res.json({status:true, message:"User Created"});
+  return;
 });
 
 
@@ -57,7 +58,7 @@ router.post('/login', async function(req, res, next){
 
 
 	try{
-		var user = await req.userCollection.findOne({user:username});
+		var user = await req.collections.users.findOne({user:username});
 		if(!user){
 			res.json({status:false, message: "No user found"});
 			return;
@@ -67,7 +68,7 @@ router.post('/login', async function(req, res, next){
 
 		if(match){
 			req.session.username = username;
-			res.json({status:true, location: "/contacts"});
+			res.json({status:true, message: "Login Successful"});
 			return;
 		} else{
 			res.json({status:false, message: "Incorrect password"});

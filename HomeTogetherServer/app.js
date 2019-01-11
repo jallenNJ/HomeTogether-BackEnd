@@ -28,8 +28,15 @@ app.set('view engine', 'pug');
 app.use(logger('dev'));
 app.use(express.json());
 app.use(express.urlencoded({ extended: false }));
-app.use(cookieParser());
+app.use(cookieParser("homeTogether"));
+app.use(ex_session({ secret: 'homeTogether' }));
 app.use(express.static(path.join(__dirname, 'public')));
+
+
+app.use((req, res, next) =>{
+  req.collections = allCollections;
+  next();
+});
 
 app.use('/', indexRouter);
 app.use('/users', usersRouter);
