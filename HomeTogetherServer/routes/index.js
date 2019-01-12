@@ -67,7 +67,8 @@ router.post('/login', async function(req, res, next){
 		let match = await bcrypt.compare(enteredpass, user.pass);
 
 		if(match){
-			req.session.username = username;
+      req.session.username = username;
+      req.session.userId = user._id;
 			res.json({status:true, message: "Login Successful"});
 			return;
 		} else{
