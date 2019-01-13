@@ -2,10 +2,25 @@ var express = require('express');
 var router = express.Router();
 
 /* GET users listing. */
-router.get('/', function(req, res, next) {
+router.get('/', async function(req, res, next) {
   console.log("Get to household with session username: ");
   console.log(req.session.username);
-  res.end();
+
+  try{
+
+     var result = await req.collections.households.find({members:req.session.userId}).toArray();
+    console.log(result);
+  } catch(ex){
+
+    console.error(ex);
+    res.json({households:[]});
+    return;
+  }
+
+
+
+
+  res.json({households:result});
   return;
 });
 
