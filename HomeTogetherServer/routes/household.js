@@ -3,12 +3,18 @@ var router = express.Router();
 
 /* GET users listing. */
 router.get('/', async function(req, res, next) {
-  console.log("Get to household with session username: ");
-  console.log(req.session.username);
+ console.log("DEBUG");
+
+ console.log(req.query);
+
+
+ if(req.query.id){
+   console.log("IMPLEMENT THE single house parsing");
+ }
 
   try{
 
-     var result = await req.collections.households.find({members:req.session.userId}).toArray();
+     var result = await req.collections.households.find({members:req.session.userId}, { name: 1}).toArray();
     console.log(result);
   } catch(ex){
 
@@ -16,9 +22,6 @@ router.get('/', async function(req, res, next) {
     res.json({households:[]});
     return;
   }
-
-
-
 
   res.json({households:result});
   return;
