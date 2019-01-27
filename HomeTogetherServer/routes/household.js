@@ -102,24 +102,33 @@ router.put('/pantry', async(req,res,next)=>{
     }
   }
 
+  var newEntry = {
+    name: req.body.name,
+    quantity: req.body.quantity,
+    category: req.body.category,
+    expires: req.body.expires
+  };
+
+  //TODO, error checking
+
+  let rawTags = req.body.tag;
+  //Split the tags on the commas, trim the extra whitespace, and remove duplicates to store only required data
+  newEntry.tags = rawTags.split(",")
+    .map((str) => {return str.trim()})
+    .filter( (val, index, self) => {
+      return self.indexOf(val) == index && val.length;
+  });
+
+
+
   try{
-     // let household = await req.households.find({_id:req.session.household});
-     console.log("House session is " + req.session.activeHousehold);
-     console.log("House session is " + JSON.stringify(req.session));
-      var newKey = await req.collections.households.updateOne({_id:ObjectID(req.session.activeHousehold)},{$push: {pantry: req.body}});
+
+      await req.collections.households.updateOne({_id:ObjectID(req.session.activeHousehold)},{$push: {pantry: newEntry}});
+      res.json({status:true, entry:newEntry});
   } catch(ex){
     console.error(ex);
-  }
-
-  console.log("Newkey is " + newKey);
-
-  //TODO: Fix this, db doesn't return key. Need to redesign
-  if(newKey){
-    res.json({status:true, key: newKey});
-  } else{
     res.json({status:false, message:"Failed to insert"});
   }
-
 });
 
 
