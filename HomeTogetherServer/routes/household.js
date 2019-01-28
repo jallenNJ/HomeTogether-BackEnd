@@ -3,8 +3,6 @@ var router = express.Router();
 const ObjectID = require('mongodb').ObjectID
 
 
-
-
 /* GET users listing. */
 router.get('/', async function(req, res, next) {
   if(!checkIfLoggedIn(req)){
@@ -13,18 +11,14 @@ router.get('/', async function(req, res, next) {
 
 
     if(req.query.id){
-
         let contains = false;
         for(house of req.session.households){
-            console.log("House is" + JSON.stringify(house));
-            console.log(house._id == req.query.id);
             if(house._id == req.query.id){
                 contains = true;
                 break;
             }
         }
 
-        console.log(contains);
         if(contains){
             req.session.activeHousehold = req.query.id;
             res.json({status:true});
@@ -85,8 +79,24 @@ router.put('/', async (req, res, next) =>{
 })
 
 router.get('/pantry', async(req, res, next) =>{
-  console.log("In pantry");
-  res.json({a:"a"});
+  if(!checkIfLoggedIn(req)){
+    return;
+  }
+  try{
+    var pantryObj = await req.collections.households.find({_id:ObjectID(req.session.activeHousehold)}, {pantry:1, _id:0}).toArray();
+
+  } catch(ex){
+    console.log("Failed to get pantry" + ex);
+    res.json({status:false, message:"Failed to retrieve data"});
+    return;
+  }
+  if(!pantryObj[0].pantry){
+    pantryObj[0].pantry = [];
+  }
+  res.json({status:true, pantry:pantryObj[0].pantry});
+
+
+
 });
 
 router.put('/pantry', async(req,res,next)=>{
@@ -109,7 +119,16 @@ router.put('/pantry', async(req,res,next)=>{
     expires: req.body.expires
   };
 
-  //TODO, error checking
+  if( newEntry.quantity < 0){
+      res.json({status:false, message:"Need to have atleast one of item"});
+      return;
+  }
+
+  //Possibly add placeholder invalid value?
+ // if(!newEntry.category){
+    
+ // }
+
 
   let rawTags = req.body.tag;
   //Split the tags on the commas, trim the extra whitespace, and remove duplicates to store only required data
@@ -134,7 +153,7 @@ router.put('/pantry', async(req,res,next)=>{
 
 function checkIfLoggedIn(req){
   if(!req.session.username){
-    console.log("Unauthorized user attempting to get household information");
+    console.log("Unauthorized user attempting to access a protected route");
     res.json({status:false, message:"Need to be logged in to do that"});
     return false;
   }
