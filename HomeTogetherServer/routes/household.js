@@ -3,14 +3,14 @@ var router = express.Router();
 const ObjectID = require('mongodb').ObjectID
 
 
-/* GET users listing. */
 router.get('/', async function(req, res, next) {
   if(!checkIfLoggedIn(req)){
     return;
   }
 
-
+    //==Start of single house query
     if(req.query.id){
+
         let contains = false;
         for(house of req.session.households){
             if(house._id == req.query.id){
@@ -21,15 +21,32 @@ router.get('/', async function(req, res, next) {
 
         if(contains){
             req.session.activeHousehold = req.query.id;
-            res.json({status:true});
+            if(req.query.fullData){
 
+              try{
+               let  household= await req.collections.households.find({_id:ObjectID(req.query.id)}).toArray();
+
+               if(household == undefined){
+                 console.log("Household is undefined");
+                 throw Exception;
+               }
+                res.json({status:true, house:household[0]}); 
+
+              } catch(ex){
+                console.log("Error fetching full data: " + ex);
+                res.json({status:"false", message:"Internal server error"});
+              }
+              return;
+            }
+           
+            res.json({status:true});
         } else{
             res.json({status:false, message:"Not allowed to modify that household"});
         }
 
         return;
     }
-
+    //== END OF SINGLE HOUSE QUERY
   try{
 
      var result = await req.collections.households.find({members:req.session.userId}, { name: 1}).toArray();
@@ -65,7 +82,11 @@ router.put('/', async (req, res, next) =>{
   let data = req.body;
   try{
     let name = data.name;
-    await req.collections.households.insertOne({name:name, members:[req.session.userId]});
+    await req.collections.households.insertOne(
+            {   name:name,  
+                members:[req.session.userId],
+                pantryLocations:["pantry", "fridge", "freezer"]
+            });
 
   } catch(ex){
     console.error("Failed to insert new household" + req.body);
