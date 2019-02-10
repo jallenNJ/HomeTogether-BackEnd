@@ -10,6 +10,17 @@ router.get('/', function(req, res, next) {
 
 
 
+router.get('/authcheck', function (req, res, next){
+	var returnVal = false;
+	if(req.session.username){
+		returnVal = true;
+	}
+	res.json({status:returnVal});
+
+
+
+})
+
 router.put('/login', async function(req, res, next) {
 
   let username = req.body.user;
