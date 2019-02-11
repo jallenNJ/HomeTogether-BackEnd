@@ -21,10 +21,10 @@ router.get('/', async function(req, res, next) {
 
         if(contains){
             req.session.activeHousehold = req.query.id;
-            if(req.query.fullData){
+            if(req.query.activeData){
 
               try{
-               let  household= await req.collections.households.find({_id:ObjectID(req.query.id)}).toArray();
+               let  household= await req.collections.households.find({_id:ObjectID(req.query.id)}, {pantry:0}).toArray();
 
                if(household == undefined){
                  console.log("Household is undefined");
