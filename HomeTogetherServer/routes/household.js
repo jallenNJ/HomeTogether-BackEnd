@@ -2,183 +2,222 @@ var express = require('express');
 var router = express.Router();
 const ObjectID = require('mongodb').ObjectID
 
+//Get to the household
+//Handles both all households an single household
+//Single Household requires the query parameter id to be present
+//  Also supports the ability to get the cache data
 
-router.get('/', async function(req, res, next) {
-  if(!checkIfLoggedIn(req)){
-    return;
-  }
+//All households takes no parameters and returns the list of all households the user is a member of
+//Status parameter of result guarenteed to exist. May contain message on failure or house on caching
+//  or the list of households
+router.get('/', async function (req, res, next) {
+    if (!checkIfLoggedIn(req)) {
+        return;
+    }
 
     //==Start of single house query
-    if(req.query.id){
+    if (req.query.id) {
 
+        //Ensure the user is a member of the household
         let contains = false;
-        for(house of req.session.households){
-            if(house._id == req.query.id){
+        for (house of req.session.households) {
+            if (house._id == req.query.id) {
                 contains = true;
                 break;
             }
         }
 
-        if(contains){
+        if (contains) { //If they are
+            //Set the active household for the user
             req.session.activeHousehold = req.query.id;
-            if(req.query.activeData){
+            if (req.query.activeData) { //If the requests wants all data of the active household to cache
 
-              try{
-               let  household= await req.collections.households.find({_id:ObjectID(req.query.id)}, {pantry:0}).toArray();
+                try {
+                    //Get the data
+                    let household = await req.collections.households.find({ _id: ObjectID(req.query.id) }, { pantry: 0 }).toArray();
 
-               if(household == undefined){
-                 console.log("Household is undefined");
-                 throw Exception;
-               }
-                res.json({status:true, house:household[0]}); 
+                    //Error handling
+                    if (household == undefined) {
+                        console.log("Household is undefined");
+                        throw Exception;
+                    }
+                    //Return the data
+                    res.json({ status: true, house: household[0] });
 
-              } catch(ex){
-                console.log("Error fetching full data: " + ex);
-                res.json({status:"false", message:"Internal server error"});
-              }
-              return;
+                } catch (ex) {
+                    console.log("Error fetching full data: " + ex);
+                    res.json({ status: "false", message: "Internal server error" });
+                }
+                return;
             }
-           
-            res.json({status:true});
-        } else{
-            res.json({status:false, message:"Not allowed to modify that household"});
+
+            res.json({ status: true });
+        } else {
+            res.json({ status: false, message: "Not allowed to modify that household" });
         }
 
         return;
     }
     //== END OF SINGLE HOUSE QUERY
-  try{
 
-     var result = await req.collections.households.find({members:req.session.userId}, { name: 1}).toArray();
-    console.log(result);
-  } catch(ex){
+    //If here, the user wants the list of all households they are apart of
+    try {
 
-    console.error(ex);
-    res.json({households:[]});
+        //Get the names and Ids of all households the user is in
+        var result = await req.collections.households.find({ members: req.session.userId }, { name: 1 }).toArray();
+        console.log(result);
+    } catch (ex) {
+
+        //If error, return the empty list for no houses
+        console.error(ex);
+        res.json({ households: [] });
+        return;
+    }
+
+    //Copy the result into the session
+    req.session.households = [];
+    for (let house of result) {
+        req.session.households.push(house);
+    }
+
+    //return the result
+    res.json({ households: result });
     return;
-  }
-
-  req.session.households = [];
-  for (let house of result){
-    req.session.households.push(house);
-  }
-
-  res.json({households:result});
-  return;
 });
 
+//Route for creating a new household
+//Status and Message fields will always exist in repsonse, however message may be the empty string;
+router.put('/', async (req, res, next) => {
 
-router.put('/', async (req, res, next) =>{
+    //Ensure user is logged in
+    if (!checkIfLoggedIn(req)) {
+        return;
+    }
+    //If user is logged in but no username. This is an error state in the server
+    if (!req.session.userId) {
+        console.error(req.session.username + " did not have userId attached");
+        res.json({ status: false, message: "Invalid session, please log in again" });
+        return;
+    }
 
-  if(!checkIfLoggedIn(req)){
-    return;
-  }
-  if(!req.session.userId){
-    console.error(req.session.username + " did not have userId attached");
-    res.json({status:false, message:"Invalid session, please log in again"});
-    return;
-  }
-
-  let data = req.body;
-  try{
-    let name = data.name;
-    await req.collections.households.insertOne(
-            {   name:name,  
-                members:[req.session.userId],
-                pantryLocations:["pantry", "fridge", "freezer"]
+    let data = req.body;
+    try {
+        //Insert the object into the database. Add the default members
+        let name = data.name;
+        await req.collections.households.insertOne(
+            {
+                name: name,
+                members: [req.session.userId],
+                pantryLocations: ["pantry", "fridge", "freezer"]
             });
 
-  } catch(ex){
-    console.error("Failed to insert new household" + req.body);
-    res.json({status:false, message:""});
-  }
+    } catch (ex) {
+        console.error("Failed to insert new household" + req.body);
+        res.json({ status: false, message: "" });
+    }
 
-  res.json({status:true, message:""});
-  return;
+    res.json({ status: true, message: "" });
+    return;
 
 
 })
 
-router.get('/pantry', async(req, res, next) =>{
-  if(!checkIfLoggedIn(req)){
-    return;
-  }
-  try{
-    var pantryObj = await req.collections.households.find({_id:ObjectID(req.session.activeHousehold)}, {pantry:1, _id:0}).toArray();
-
-  } catch(ex){
-    console.log("Failed to get pantry" + ex);
-    res.json({status:false, message:"Failed to retrieve data"});
-    return;
-  }
-  if(!pantryObj[0].pantry){
-    pantryObj[0].pantry = [];
-  }
-  res.json({status:true, pantry:pantryObj[0].pantry});
-
-
-
-});
-
-router.put('/pantry', async(req,res,next)=>{
-  if(!checkIfLoggedIn(req)){
-    return;
-  }
-
-  let keys = ["name", "quantity", "expires", "category", "tag"]
-  for(key of keys){
-    if(!req.body[key]){
-      req.json({status:false, message:"Required field invalid"});
-      return;
+//Gets the data of what items are inside the pantry 
+//Status will always exist. On errors, message will exist, otherwise the pantry field will exist
+router.get('/pantry', async (req, res, next) => {
+    //Ensure user is logged in
+    if (!checkIfLoggedIn(req)) {
+        return;
     }
-  }
+    try {
+        //Get the object
+        var pantryObj = await req.collections.households.find({ _id: ObjectID(req.session.activeHousehold) }, { pantry: 1, _id: 0 }).toArray();
 
-  var newEntry = {
-    name: req.body.name,
-    quantity: req.body.quantity,
-    category: req.body.category,
-    expires: req.body.expires
-  };
-
-  if( newEntry.quantity < 0){
-      res.json({status:false, message:"Need to have atleast one of item"});
-      return;
-  }
-
-  //Possibly add placeholder invalid value?
- // if(!newEntry.category){
-    
- // }
-
-
-  let rawTags = req.body.tag;
-  //Split the tags on the commas, trim the extra whitespace, and remove duplicates to store only required data
-  newEntry.tags = rawTags.split(",")
-    .map((str) => {return str.trim()})
-    .filter( (val, index, self) => {
-      return self.indexOf(val) == index && val.length;
-  });
+    } catch (ex) {
+        //Log any errors that occur and give a generic error to client
+        console.log("Failed to get pantry" + ex);
+        res.json({ status: false, message: "Failed to retrieve data" });
+        return;
+    }
+    //If no array exists, create an empty one
+    if (!pantryObj[0].pantry) {
+        pantryObj[0].pantry = [];
+    }
+    res.json({ status: true, pantry: pantryObj[0].pantry });
 
 
 
-  try{
-
-      await req.collections.households.updateOne({_id:ObjectID(req.session.activeHousehold)},{$push: {pantry: newEntry}});
-      res.json({status:true, entry:newEntry});
-  } catch(ex){
-    console.error(ex);
-    res.json({status:false, message:"Failed to insert"});
-  }
 });
 
 
-function checkIfLoggedIn(req){
-  if(!req.session.username){
-    console.log("Unauthorized user attempting to access a protected route");
-    res.json({status:false, message:"Need to be logged in to do that"});
-    return false;
-  }
-  return true;
+//Add an item to the pantry 
+router.put('/pantry', async (req, res, next) => {
+    //Ensure user is logged in
+    if (!checkIfLoggedIn(req)) {
+        return;
+    }
+
+    //The keys which must exist
+    let keys = ["name", "quantity", "expires", "category", "tag"]
+    //If any of them are missing, notify client of invalid request
+    for (key of keys) {
+        if (!req.body[key]) {
+            req.json({ status: false, message: "Required field invalid" });
+            return;
+        }
+    }
+
+    //Create the object
+    //TODO: Convert to loop? Issue is on the ones that need special handling
+    var newEntry = {
+        name: req.body.name,
+        quantity: req.body.quantity,
+        category: req.body.category,
+        expires: req.body.expires
+    };
+
+    //If the quanity is less than 0, obviously incorrect
+    if (newEntry.quantity < 0) {
+        res.json({ status: false, message: "Need to have atleast one of item" });
+        return;
+    }
+
+    //Possibly add placeholder invalid value?
+    // if(!newEntry.category){
+
+    // }
+
+
+    let rawTags = req.body.tag;
+    //Split the tags on the commas, trim the extra whitespace, and remove duplicates to store only required data
+    newEntry.tags = rawTags.split(",")
+        .map((str) => { return str.trim() })
+        .filter((val, index, self) => {
+            return self.indexOf(val) == index && val.length;
+        });
+
+
+
+    try {
+        //Update the household to contain the new pantry information
+        await req.collections.households.updateOne({ _id: ObjectID(req.session.activeHousehold) }, { $push: { pantry: newEntry } });
+        res.json({ status: true, entry: newEntry });
+    } catch (ex) {
+        console.error(ex);
+        res.json({ status: false, message: "Failed to insert" });
+    }
+});
+
+
+//Function to check if a user is logged in. If they are not, terminates the route
+// Also TODO: Check if res should be passed in
+function checkIfLoggedIn(req) {
+    if (!req.session.username) {
+        console.log("Unauthorized user attempting to access a protected route");
+        res.json({ status: false, message: "Need to be logged in to do that" });
+        return false;
+    }
+    return true;
 }
 
 
