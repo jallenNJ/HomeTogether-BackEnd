@@ -11,7 +11,7 @@ const ObjectID = require('mongodb').ObjectID
 //Status parameter of result guarenteed to exist. May contain message on failure or house on caching
 //  or the list of households
 router.get('/', async function (req, res, next) {
-    if (!checkIfLoggedIn(req)) {
+    if (!checkIfLoggedIn(req, res)) {
         return;
     }
 
@@ -90,7 +90,7 @@ router.get('/', async function (req, res, next) {
 router.put('/', async (req, res, next) => {
 
     //Ensure user is logged in
-    if (!checkIfLoggedIn(req)) {
+    if (!checkIfLoggedIn(req, res)) {
         return;
     }
     //If user is logged in but no username. This is an error state in the server
@@ -120,13 +120,15 @@ router.put('/', async (req, res, next) => {
     return;
 
 
-})
+});
+
+
 
 //Gets the data of what items are inside the pantry 
 //Status will always exist. On errors, message will exist, otherwise the pantry field will exist
 router.get('/pantry', async (req, res, next) => {
     //Ensure user is logged in
-    if (!checkIfLoggedIn(req)) {
+    if (!checkIfLoggedIn(req, res)) {
         return;
     }
     try {
@@ -153,49 +155,24 @@ router.get('/pantry', async (req, res, next) => {
 //Add an item to the pantry 
 router.put('/pantry', async (req, res, next) => {
     //Ensure user is logged in
-    if (!checkIfLoggedIn(req)) {
+    if (!checkIfLoggedIn(req, res)) {
         return;
     }
 
-    //The keys which must exist
-    let keys = ["name", "quantity", "expires", "category", "tag"]
-    //If any of them are missing, notify client of invalid request
-    for (key of keys) {
-        if (!req.body[key]) {
-            req.json({ status: false, message: "Required field invalid" });
-            return;
-        }
-    }
 
-    //Create the object
-    //TODO: Convert to loop? Issue is on the ones that need special handling
-    var newEntry = {
-        name: req.body.name,
-        quantity: req.body.quantity,
-        category: req.body.category,
-        expires: req.body.expires
-    };
 
-    //If the quanity is less than 0, obviously incorrect
-    if (newEntry.quantity < 0) {
-        res.json({ status: false, message: "Need to have atleast one of item" });
+    if(!validatePantryFieldsExist(req.body, res)){
         return;
     }
-
-    //Possibly add placeholder invalid value?
-    // if(!newEntry.category){
-
-    // }
-
-
-    let rawTags = req.body.tag;
-    //Split the tags on the commas, trim the extra whitespace, and remove duplicates to store only required data
-    newEntry.tags = rawTags.split(",")
-        .map((str) => { return str.trim() })
-        .filter((val, index, self) => {
-            return self.indexOf(val) == index && val.length;
-        });
-
+    var newEntry = formatPantryObject(req.body);
+    if(newEntry === undefined){
+        res.json({status:false, message:"Invalid object format"});
+        return;
+    }
+    //False means function sent headers
+    if(newEntry === false){
+        return;
+    }
 
 
     try {
@@ -208,10 +185,90 @@ router.put('/pantry', async (req, res, next) => {
     }
 });
 
+router.patch("/pantry", async(req, res, next)=>{
+
+    //Ensure user is logged in
+    if (!checkIfLoggedIn(req, res)) {
+        return;
+    }
+
+    if(!validatePantryFieldsExist(req.body, res)){
+        return;
+    }
+    var newEntry = formatPantryObject(req.body);
+    if(newEntry == undefined){
+        res.json({status:false, message:"Invalid object format"});
+        return;
+    }
+
+    //TODO: Get old name from client and use as key for array? 
+    console.log("Patch recieved, doing nothing");
+
+    res.json({status:false, message:"Not implemeneted"});
+
+
+})
+
+
+function validatePantryFieldsExist(pantryItem, res){
+    //The keys which must exist
+    let keys = ["name", "quantity", "expires", "category", "tag"]
+    //If any of them are missing, notify client of invalid request
+    for (key of keys) {
+        if (!pantryItem[key]) {
+            res.json({ status: false, message: "Required field invalid" });
+            return false;
+        }
+    }
+    return true;
+
+
+}
+
+function formatPantryObject(pantryItem){
+
+    
+    if(pantryItem == undefined){
+        console.error("formatPantryObject called with no object, returning undefined");
+        return undefined;
+    }
+
+    //Create the object
+    //TODO: Convert to loop? Issue is on the ones that need special handling
+    var newEntry = {
+        name: pantryItem.name,
+        quantity: pantryItem.quantity,
+        category: pantryItem.category,
+        expires: pantryItem.expires
+    };
+
+    //If the quanity is less than 0, obviously incorrect
+    if (newEntry.quantity < 0) {
+        res.json({ status: false, message: "Need to have atleast one of item" });
+        return false;
+    }
+
+    //Possibly add placeholder invalid value?
+    // if(!newEntry.category){
+
+    // }
+
+
+    let rawTags = pantryItem.tag;
+    //Split the tags on the commas, trim the extra whitespace, and remove duplicates to store only required data
+    newEntry.tags = rawTags.split(",")
+        .map((str) => { return str.trim() })
+        .filter((val, index, self) => {
+            return self.indexOf(val) == index && val.length;
+        });
+
+    return newEntry;    
+
+}
 
 //Function to check if a user is logged in. If they are not, terminates the route
 // Also TODO: Check if res should be passed in
-function checkIfLoggedIn(req) {
+function checkIfLoggedIn(req, res) {
     if (!req.session.username) {
         console.log("Unauthorized user attempting to access a protected route");
         res.json({ status: false, message: "Need to be logged in to do that" });
