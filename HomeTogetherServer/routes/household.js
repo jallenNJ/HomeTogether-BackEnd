@@ -131,6 +131,10 @@ router.get('/pantry', async (req, res, next) => {
     if (!checkIfLoggedIn(req, res)) {
         return;
     }
+    if(!checkIfInHousehold(req)){
+        res.json({status:false, message:"User not in household"});
+        return;
+    }
     try {
         //Get the object
         var pantryObj = await req.collections.households.find({ _id: ObjectID(req.session.activeHousehold) }, { pantry: 1, _id: 0 }).toArray();
@@ -156,6 +160,10 @@ router.get('/pantry', async (req, res, next) => {
 router.put('/pantry', async (req, res, next) => {
     //Ensure user is logged in
     if (!checkIfLoggedIn(req, res)) {
+        return;
+    }
+    if(!checkIfInHousehold(req)){
+        res.json({status:false, message:"User not in household"});
         return;
     }
 
@@ -192,6 +200,11 @@ router.patch("/pantry", async(req, res, next)=>{
         return;
     }
 
+    if(!checkIfInHousehold(req)){
+        res.json({status:false, message:"User not in household"});
+        return;
+    }
+
     if(!validatePantryFieldsExist(req.body, res)){
         return;
     }
@@ -213,6 +226,33 @@ router.patch("/pantry", async(req, res, next)=>{
 
     //res.json({status:false, message:"Not implemeneted"});
 
+
+})
+
+router.delete("/pantry", async(req,res,next) =>{
+    //Ensure user is logged in
+    if (!checkIfLoggedIn(req, res)) {
+        return;
+    }
+
+    if(!checkIfInHousehold(req)){
+        res.json({status:false, message:"User not in household"});
+        return;
+    }
+
+    if(!req.query.name){
+        console.log("No name specifed in delete" +  JSON.stringify(req.query));
+        res.json({status:false, message:"No item specifed"});
+        return;
+    }
+
+    try{
+        await req.collections.households.updateOne({_id:ObjectID(req.session.activeHousehold)}, {$pull: {"pantry":{"name":req.query.name}}});
+        res.json({status:true, message:"item deleted"});
+    } catch (ex){
+        console.error("Faled to delete in pantry" + ex);
+        res.json({status:false, message:"Unabled to delete element"});
+    }
 
 })
 
@@ -284,5 +324,13 @@ function checkIfLoggedIn(req, res) {
     return true;
 }
 
+function checkIfInHousehold(req){
+    for (house of req.session.households) {
+        if (house._id == req.session.activeHousehold) {
+            return true;
+        }
+    }
+    return false;
+}
 
 module.exports = router;
