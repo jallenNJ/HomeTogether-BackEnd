@@ -201,10 +201,17 @@ router.patch("/pantry", async(req, res, next)=>{
         return;
     }
 
-    //TODO: Get old name from client and use as key for array? 
-    console.log("Patch recieved, doing nothing");
 
-    res.json({status:false, message:"Not implemeneted"});
+    try{
+        await req.collections.households.updateOne({_id:ObjectID(req.session.activeHousehold), "pantry.name":newEntry.name}, {$set: {"pantry.$": newEntry}});
+        res.json({status:true, updated:newEntry});
+
+    } catch (ex){
+        console.error("Failed to update pantry" + ex);
+        res.json({status:false, message:"Unable to update element"});
+    }
+
+    //res.json({status:false, message:"Not implemeneted"});
 
 
 })
