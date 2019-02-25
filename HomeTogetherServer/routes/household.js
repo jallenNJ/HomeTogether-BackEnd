@@ -193,6 +193,12 @@ router.put('/pantry', async (req, res, next) => {
     }
 });
 
+
+//Route to modify an existing item in the households pantry 
+//  Uses the name of the item as a primary key, so if a front end submits a change to the name,
+//      The route will deny the change due to being unable to find the item in the pantry.
+//
+// Status field will exist on all responses to this route
 router.patch("/pantry", async(req, res, next)=>{
 
     //Ensure user is logged in
@@ -200,46 +206,52 @@ router.patch("/pantry", async(req, res, next)=>{
         return;
     }
 
+    //Make sure the user is in the household, should always be true but good to check
     if(!checkIfInHousehold(req)){
         res.json({status:false, message:"User not in household"});
         return;
     }
 
+    //Ensure the submitted request has all fields, if any of missing function will send response
     if(!validatePantryFieldsExist(req.body, res)){
         return;
     }
+
+    //Now that all fields exist, apply all formatting needed before sending to the db
     var newEntry = formatPantryObject(req.body);
-    if(newEntry == undefined){
+    if(newEntry == undefined){ //Either internal error or invalid input data
         res.json({status:false, message:"Invalid object format"});
         return;
     }
 
-
     try{
+        //Apply the update to the selected element in the array, and then send the update response
         await req.collections.households.updateOne({_id:ObjectID(req.session.activeHousehold), "pantry.name":newEntry.name}, {$set: {"pantry.$": newEntry}});
         res.json({status:true, updated:newEntry});
 
-    } catch (ex){
+    } catch (ex){ //Failed to update, report a generic error to the front end and full details locally
         console.error("Failed to update pantry" + ex);
         res.json({status:false, message:"Unable to update element"});
     }
-
-    //res.json({status:false, message:"Not implemeneted"});
-
-
 })
 
+
+//Route to delete data from the user's pantry
+// The name is the only required field as it is used to find the item in the pantry.
+// TODO: Make use of the quanity field to only remove select amounts? Or just leave for update?
 router.delete("/pantry", async(req,res,next) =>{
     //Ensure user is logged in
     if (!checkIfLoggedIn(req, res)) {
         return;
     }
 
+    //Make sure user is in house, should always pass but good to check
     if(!checkIfInHousehold(req)){
         res.json({status:false, message:"User not in household"});
         return;
     }
 
+    //Ensure the name was given in the request
     if(!req.query.name){
         console.log("No name specifed in delete" +  JSON.stringify(req.query));
         res.json({status:false, message:"No item specifed"});
@@ -247,9 +259,11 @@ router.delete("/pantry", async(req,res,next) =>{
     }
 
     try{
+        //Delete that entry from the array and respond to user
         await req.collections.households.updateOne({_id:ObjectID(req.session.activeHousehold)}, {$pull: {"pantry":{"name":req.query.name}}});
         res.json({status:true, message:"item deleted"});
     } catch (ex){
+        //If failed, give generic error to the user and full error to console.
         console.error("Faled to delete in pantry" + ex);
         res.json({status:false, message:"Unabled to delete element"});
     }
@@ -324,6 +338,9 @@ function checkIfLoggedIn(req, res) {
     return true;
 }
 
+//This function returns true or false for if the user is a member of the activehousehold
+// Right now it will always be true, however once a user is allowed to be removed from a household, it will be a good
+//  safety net.
 function checkIfInHousehold(req){
     for (house of req.session.households) {
         if (house._id == req.session.activeHousehold) {
