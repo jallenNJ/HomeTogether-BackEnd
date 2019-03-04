@@ -18,6 +18,7 @@ const allCollections = {};
 
 var indexRouter = require('./routes/index');
 var houseRouter = require('./routes/household');
+var userRouter = require('./routes/users');
 
 var app = express();
 
@@ -40,6 +41,7 @@ app.use((req, res, next) =>{
 
 app.use('/', indexRouter);
 app.use('/household', houseRouter);
+app.use('/users', userRouter);
 
 // catch 404 and forward to error handler
 app.use(function(req, res, next) {
