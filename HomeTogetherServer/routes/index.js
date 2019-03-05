@@ -40,7 +40,7 @@ router.put('/login', async function(req, res, next) {
 	
 	try{
 		//Ensure the username is not taken already
-		var sameUser = await req.collections.users.findOne({user:username});
+		var sameUser = await req.collections.users.findOne({user:username, $options : 'i'});
 		
 		if(sameUser){
 			res.json({status:false, message: "User already exists"});
