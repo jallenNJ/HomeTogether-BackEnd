@@ -40,6 +40,16 @@ app.use((req, res, next) =>{
 });
 
 app.use('/', indexRouter);
+app.use((req,res,next) =>{ //Ensures user is logged in
+
+  if (!req.session.username) {
+    console.log("Unauthorized user attempting to access a protected route");
+    res.json({ status: false, message: "Need to be logged in to do that" });
+    return;
+}
+next();
+
+});
 app.use('/household', houseRouter);
 app.use('/users', userRouter);
 

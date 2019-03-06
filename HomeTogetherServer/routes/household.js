@@ -13,9 +13,6 @@ const ObjectID = require('mongodb').ObjectID
 
 //TODO: FIX REQUEST TO SPECIFIC HOUSEHOLD WITH NO HOUSEHOLD CAUSING ISSUE
 router.get('/', async function (req, res, next) {
-    if (!checkIfLoggedIn(req, res)) {
-        return;
-    }
 
     //==Start of single house query
     if (req.query.id) {
@@ -91,10 +88,7 @@ router.get('/', async function (req, res, next) {
 //Status and Message fields will always exist in repsonse, however message may be the empty string;
 router.put('/', async (req, res, next) => {
 
-    //Ensure user is logged in
-    if (!checkIfLoggedIn(req, res)) {
-        return;
-    }
+
     //If user is logged in but no username. This is an error state in the server
     if (!req.session.userId) {
         console.error(req.session.username + " did not have userId attached");
@@ -129,10 +123,6 @@ router.put('/', async (req, res, next) => {
 //Gets the data of what items are inside the pantry 
 //Status will always exist. On errors, message will exist, otherwise the pantry field will exist
 router.get('/pantry', async (req, res, next) => {
-    //Ensure user is logged in
-    if (!checkIfLoggedIn(req, res)) {
-        return;
-    }
     if(!checkIfInHousehold(req)){
         res.json({status:false, message:"User not in household"});
         return;
@@ -160,10 +150,7 @@ router.get('/pantry', async (req, res, next) => {
 
 //Add an item to the pantry 
 router.put('/pantry', async (req, res, next) => {
-    //Ensure user is logged in
-    if (!checkIfLoggedIn(req, res)) {
-        return;
-    }
+
     if(!checkIfInHousehold(req)){
         res.json({status:false, message:"User not in household"});
         return;
@@ -203,11 +190,6 @@ router.put('/pantry', async (req, res, next) => {
 // Status field will exist on all responses to this route
 router.patch("/pantry", async(req, res, next)=>{
 
-    //Ensure user is logged in
-    if (!checkIfLoggedIn(req, res)) {
-        return;
-    }
-
     //Make sure the user is in the household, should always be true but good to check
     if(!checkIfInHousehold(req)){
         res.json({status:false, message:"User not in household"});
@@ -242,10 +224,6 @@ router.patch("/pantry", async(req, res, next)=>{
 // The name is the only required field as it is used to find the item in the pantry.
 // TODO: Make use of the quanity field to only remove select amounts? Or just leave for update?
 router.delete("/pantry", async(req,res,next) =>{
-    //Ensure user is logged in
-    if (!checkIfLoggedIn(req, res)) {
-        return;
-    }
 
     //Make sure user is in house, should always pass but good to check
     if(!checkIfInHousehold(req)){
@@ -274,10 +252,6 @@ router.delete("/pantry", async(req,res,next) =>{
 
 
 router.put("/member", async (req, res, next)=>{
-    //Ensure user is logged in
-    if (!checkIfLoggedIn(req, res)) {
-        return;
-    }
 
     if(!req.body.username){
         res.json({status:false});
@@ -372,17 +346,6 @@ function formatPantryObject(pantryItem){
 
     return newEntry;    
 
-}
-
-//Function to check if a user is logged in. If they are not, terminates the route
-// Also TODO: Check if res should be passed in
-function checkIfLoggedIn(req, res) {
-    if (!req.session.username) {
-        console.log("Unauthorized user attempting to access a protected route");
-        res.json({ status: false, message: "Need to be logged in to do that" });
-        return false;
-    }
-    return true;
 }
 
 //This function returns true or false for if the user is a member of the activehousehold
