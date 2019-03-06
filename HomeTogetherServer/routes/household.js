@@ -10,6 +10,8 @@ const ObjectID = require('mongodb').ObjectID
 //All households takes no parameters and returns the list of all households the user is a member of
 //Status parameter of result guarenteed to exist. May contain message on failure or house on caching
 //  or the list of households
+
+//TODO: FIX REQUEST TO SPECIFIC HOUSEHOLD WITH NO HOUSEHOLD CAUSING ISSUE
 router.get('/', async function (req, res, next) {
     if (!checkIfLoggedIn(req, res)) {
         return;
@@ -270,6 +272,51 @@ router.delete("/pantry", async(req,res,next) =>{
 
 })
 
+
+router.put("/member", async (req, res, next)=>{
+    //Ensure user is logged in
+    if (!checkIfLoggedIn(req, res)) {
+        return;
+    }
+
+    if(!req.body.username){
+        res.json({status:false});
+        console.log("No username in household/member/put");
+        return;
+    }
+
+    if(!req.session.activeHousehold){
+        res.json({status:false});
+        console.log("User did not select a household before trying to add a user");
+        return;
+    }
+
+    try{
+        var user = await req.collections.users.findOne({user:req.body.username}, {pass:0});
+        //TODO: check if same member is already in household
+        if(!user ){
+            res.json({status:false});
+            console.log(req.body.username)
+        }
+
+        
+       var result = await req.collections.households.updateOne({ _id: ObjectID(req.session.activeHousehold) }, { $push: { members: ObjectID(user._id).toString() } })
+        if(!result){
+            console.log("Insert fail");
+        }
+    } catch(ex){
+        console.error(ex);
+        res.json({status:false});
+    }
+
+    res.json({status:true});
+
+
+})
+
+//router.put("/user", (req, res, next)=>{
+
+//});
 
 function validatePantryFieldsExist(pantryItem, res){
     //The keys which must exist
