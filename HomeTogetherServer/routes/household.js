@@ -2,63 +2,70 @@ var express = require('express');
 var router = express.Router();
 const ObjectID = require('mongodb').ObjectID
 
-//Get to the household
-//Handles both all households an single household
-//Single Household requires the query parameter id to be present
-//  Also supports the ability to get the cache data
 
-//All households takes no parameters and returns the list of all households the user is a member of
-//Status parameter of result guarenteed to exist. May contain message on failure or house on caching
-//  or the list of households
+//This function is responsible for querying a single household from the data base and
+//  may call the allHouseQuery function if a user attempts to access the route before that is called.
+async function singleHouseQuery(req,res,next){
 
-//TODO: FIX REQUEST TO SPECIFIC HOUSEHOLD WITH NO HOUSEHOLD CAUSING ISSUE
-router.get('/', async function (req, res, next) {
+    if(!req.session.households){
 
-    //==Start of single house query
-    if (req.query.id) {
-
-        //Ensure the user is a member of the household
-        let contains = false;
-        for (house of req.session.households) {
-            if (house._id == req.query.id) {
-                contains = true;
-                break;
-            }
-        }
-
-        if (contains) { //If they are
-            //Set the active household for the user
-            req.session.activeHousehold = req.query.id;
-            if (req.query.activeData) { //If the requests wants all data of the active household to cache
-
-                try {
-                    //Get the data
-                    let household = await req.collections.households.find({ _id: ObjectID(req.query.id) }, { pantry: 0 }).toArray();
-
-                    //Error handling
-                    if (household == undefined) {
-                        console.log("Household is undefined");
-                        throw Exception;
-                    }
-                    //Return the data
-                    res.json({ status: true, house: household[0] });
-
-                } catch (ex) {
-                    console.log("Error fetching full data: " + ex);
-                    res.json({ status: "false", message: "Internal server error" });
-                }
+        try{
+            let allHouses = await allHouseQuery(req, res, next);
+            if(!allHouses){
                 return;
             }
+        } catch(ex){
+            console.error(ex);
+            return;
+        }
+    }   
+    //Ensure the user is a member of the household
+    let contains = false;
+    for (house of req.session.households) {
+        if (house._id == req.query.id) {
+            contains = true;
+            break;
+        }
+    }
 
-            res.json({ status: true });
-        } else {
-            res.json({ status: false, message: "Not allowed to modify that household" });
+    if (contains) { //If they are
+        //Set the active household for the user
+        req.session.activeHousehold = req.query.id;
+        if (req.query.activeData) { //If the requests wants all data of the active household to cache
+
+            try {
+                //Get the data
+                let household = await req.collections.households.find({ _id: ObjectID(req.query.id) }, { pantry: 0 }).toArray();
+
+                //Error handling
+                if (household == undefined) {
+                    console.log("Household is undefined");
+                    throw Exception;
+                }
+                //Return the data
+                res.json({ status: true, house: household[0] });
+
+            } catch (ex) {
+                console.log("Error fetching full data: " + ex);
+                res.json({ status: "false", message: "Internal server error" });
+            }
+            return;
         }
 
-        return;
-    }
-    //== END OF SINGLE HOUSE QUERY
+        res.json({ status: true });
+    } else {
+        res.json({ status: false, message: "Not allowed to modify that household" });
+ }
 
+ return;
+}
+
+//This function is responsible for querying all households that a user is in, and intializing the 
+//  sessions households to all households they are apart of
+async function allHouseQuery(req, res, next){
+    if(req.session.households === undefined){
+        req.session.households = [];
+    }
     //If here, the user wants the list of all households they are apart of
     try {
 
@@ -70,7 +77,7 @@ router.get('/', async function (req, res, next) {
         //If error, return the empty list for no houses
         console.error(ex);
         res.json({ households: [] });
-        return;
+        return false;
     }
 
     //Copy the result into the session
@@ -80,7 +87,34 @@ router.get('/', async function (req, res, next) {
     }
 
     //return the result
-    res.json({ households: result });
+   return { households: result };
+}
+
+//Get to the household
+//Handles both all households an single household
+//  Makes use of two helper function which seperate the functionality of all and single
+//Single Household requires the query parameter id to be present
+//  Also supports the ability to get the cache data
+
+
+//All households takes no parameters and returns the list of all households the user is a member of
+//Status parameter of result guarenteed to exist. May contain message on failure or house on caching
+//  or the list of households
+
+router.get('/', async function (req, res, next) {
+
+    //==Start of single house query
+    if (req.query.id) {
+        singleHouseQuery(req,res,next);
+        return;       
+    }
+    //== END OF SINGLE HOUSE QUERY
+
+    //If false, server sent header, otherwise send the object the server made
+    var result = allHouseQuery(req, res, next);
+    if(result){
+        res.json(result);
+    }
     return;
 });
 
