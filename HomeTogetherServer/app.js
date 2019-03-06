@@ -30,7 +30,7 @@ app.use(logger('dev'));
 app.use(express.json());
 app.use(express.urlencoded({ extended: false }));
 app.use(cookieParser("homeTogether"));
-app.use(ex_session({ secret: 'homeTogether' }));
+app.use(ex_session({ secret: 'homeTogether', resave: false, saveUninitialized:false })); //If touch/rolling is enabled, set resave to true
 app.use(express.static(path.join(__dirname, 'public')));
 
 
