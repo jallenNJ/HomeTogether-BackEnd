@@ -111,7 +111,14 @@ router.get('/', async function (req, res, next) {
     //== END OF SINGLE HOUSE QUERY
 
     //If false, server sent header, otherwise send the object the server made
-    var result = allHouseQuery(req, res, next);
+    
+    try{
+        var result = await allHouseQuery(req, res, next);
+    } catch(ex){
+        console.error(ex);
+    }
+
+
     if(result){
         res.json(result);
     }
