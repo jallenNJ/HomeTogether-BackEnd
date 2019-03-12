@@ -5,6 +5,17 @@ const ObjectID = require('mongodb').ObjectID
 
 //This function is responsible for querying a single household from the data base and
 //  may call the allHouseQuery function if a user attempts to access the route before that is called.
+
+/**
+*This function is responsible for querying a single household from the data base and
+*  may call the allHouseQuery function if a user attempts to access the route before that is called.
+*
+* @method singleHouseQuery
+* @param {Object} req Incoming request
+* @param {Object} res The response to send
+* @param {Function} next The next middle ware function to call
+* @return {undefined} Returns undefined on DB look-up error
+*/
 async function singleHouseQuery(req,res,next){
 
     if(!req.session.households){
@@ -47,14 +58,14 @@ async function singleHouseQuery(req,res,next){
 
             } catch (ex) {
                 console.log("Error fetching full data: " + ex);
-                res.json({ status: "false", message: "Internal server error" });
+                res.status(500).json({ status: "false", message: "Internal server error" });
             }
             return;
         }
 
-        res.json({ status: true });
+        res.status(204).send();
     } else {
-        res.json({ status: false, message: "Not allowed to modify that household" });
+        res.status(403).json({ message: "Not allowed to modify that household" });
  }
 
  return;
@@ -76,7 +87,7 @@ async function allHouseQuery(req, res, next){
 
         //If error, return the empty list for no houses
         console.error(ex);
-        res.json({ households: [] });
+        res.status(404).json({ households: [] });
         return false;
     }
 
@@ -133,7 +144,7 @@ router.put('/', async (req, res, next) => {
     //If user is logged in but no username. This is an error state in the server
     if (!req.session.userId) {
         console.error(req.session.username + " did not have userId attached");
-        res.json({ status: false, message: "Invalid session, please log in again" });
+        res.status(401).json({ status: false, message: "Invalid session, please log in again" });
         return;
     }
 
@@ -150,10 +161,10 @@ router.put('/', async (req, res, next) => {
 
     } catch (ex) {
         console.error("Failed to insert new household" + req.body);
-        res.json({ status: false, message: "" });
+        res.status(500).json({ message: "" });
     }
 
-    res.json({ status: true, message: "" });
+    res.status(204).send();
     return;
 
 
@@ -165,7 +176,7 @@ router.put('/', async (req, res, next) => {
 //Status will always exist. On errors, message will exist, otherwise the pantry field will exist
 router.get('/pantry', async (req, res, next) => {
     if(!checkIfInHousehold(req)){
-        res.json({status:false, message:"User not in household"});
+        res.status(401).json({status:false, message:"User not in household"});
         return;
     }
     try {
@@ -175,7 +186,7 @@ router.get('/pantry', async (req, res, next) => {
     } catch (ex) {
         //Log any errors that occur and give a generic error to client
         console.log("Failed to get pantry" + ex);
-        res.json({ status: false, message: "Failed to retrieve data" });
+        res.status(500).json({ status: false, message: "Failed to retrieve data" });
         return;
     }
     //If no array exists, create an empty one
@@ -193,7 +204,7 @@ router.get('/pantry', async (req, res, next) => {
 router.put('/pantry', async (req, res, next) => {
 
     if(!checkIfInHousehold(req)){
-        res.json({status:false, message:"User not in household"});
+        res.status(401).json({ message:"User not in household"});
         return;
     }
 
@@ -204,7 +215,7 @@ router.put('/pantry', async (req, res, next) => {
     }
     var newEntry = formatPantryObject(req.body);
     if(newEntry === undefined){
-        res.json({status:false, message:"Invalid object format"});
+        res.status(400).json({, message:"Invalid object format"});
         return;
     }
     //False means function sent headers
@@ -216,10 +227,10 @@ router.put('/pantry', async (req, res, next) => {
     try {
         //Update the household to contain the new pantry information
         await req.collections.households.updateOne({ _id: ObjectID(req.session.activeHousehold) }, { $push: { pantry: newEntry } });
-        res.json({ status: true, entry: newEntry });
+        res.json({  entry: newEntry });
     } catch (ex) {
         console.error(ex);
-        res.json({ status: false, message: "Failed to insert" });
+        res.status(500).json({message: "Failed to insert" });
     }
 });
 
@@ -233,7 +244,7 @@ router.patch("/pantry", async(req, res, next)=>{
 
     //Make sure the user is in the household, should always be true but good to check
     if(!checkIfInHousehold(req)){
-        res.json({status:false, message:"User not in household"});
+        res.status(401).json({ message:"User not in household"});
         return;
     }
 
@@ -245,7 +256,7 @@ router.patch("/pantry", async(req, res, next)=>{
     //Now that all fields exist, apply all formatting needed before sending to the db
     var newEntry = formatPantryObject(req.body);
     if(newEntry == undefined){ //Either internal error or invalid input data
-        res.json({status:false, message:"Invalid object format"});
+        res.status(400).json({ message:"Invalid object format"});
         return;
     }
 
@@ -256,7 +267,7 @@ router.patch("/pantry", async(req, res, next)=>{
 
     } catch (ex){ //Failed to update, report a generic error to the front end and full details locally
         console.error("Failed to update pantry" + ex);
-        res.json({status:false, message:"Unable to update element"});
+        res.status(500).json({status:false, message:"Unable to update element"});
     }
 })
 
@@ -268,25 +279,25 @@ router.delete("/pantry", async(req,res,next) =>{
 
     //Make sure user is in house, should always pass but good to check
     if(!checkIfInHousehold(req)){
-        res.json({status:false, message:"User not in household"});
+        res.status(401).json({ message:"User not in household"});
         return;
     }
 
     //Ensure the name was given in the request
     if(!req.query.name){
         console.log("No name specifed in delete" +  JSON.stringify(req.query));
-        res.json({status:false, message:"No item specifed"});
+        res.status(400).json({ message:"No item specifed"});
         return;
     }
 
     try{
         //Delete that entry from the array and respond to user
         await req.collections.households.updateOne({_id:ObjectID(req.session.activeHousehold)}, {$pull: {"pantry":{"name":req.query.name}}});
-        res.json({status:true, message:"item deleted"});
+        res.json({ message:"item deleted"});
     } catch (ex){
         //If failed, give generic error to the user and full error to console.
         console.error("Faled to delete in pantry" + ex);
-        res.json({status:false, message:"Unabled to delete element"});
+        res.status(500).json({ message:"Unabled to delete element"});
     }
 
 })
@@ -295,13 +306,13 @@ router.delete("/pantry", async(req,res,next) =>{
 router.put("/member", async (req, res, next)=>{
 
     if(!req.body.username){
-        res.json({status:false});
+        res.status(401).json({status:false});
         console.log("No username in household/member/put");
         return;
     }
 
     if(!req.session.activeHousehold){
-        res.json({status:false});
+        res.status(403).json({status:false});
         console.log("User did not select a household before trying to add a user");
         return;
     }
@@ -310,7 +321,7 @@ router.put("/member", async (req, res, next)=>{
         var user = await req.collections.users.findOne({user:req.body.username}, {pass:0});
         //TODO: check if same member is already in household
         if(!user ){
-            res.json({status:false});
+            res.status(400).json({status:false});
             console.log(req.body.username)
         }
 
@@ -321,7 +332,7 @@ router.put("/member", async (req, res, next)=>{
         }
     } catch(ex){
         console.error(ex);
-        res.json({status:false});
+        res.status(500).json({status:false});
     }
 
     res.json({status:true});
@@ -367,7 +378,7 @@ function formatPantryObject(pantryItem){
 
     //If the quanity is less than 0, obviously incorrect
     if (newEntry.quantity < 0) {
-        res.json({ status: false, message: "Need to have atleast one of item" });
+        res.status(400).json({message: "Need to have atleast one of item" });
         return false;
     }
 
