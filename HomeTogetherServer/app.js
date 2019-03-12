@@ -44,7 +44,7 @@ app.use((req,res,next) =>{ //Ensures user is logged in
 
   if (!req.session.username) {
     console.log("Unauthorized user attempting to access a protected route");
-    res.json({ status: false, message: "Need to be logged in to do that" });
+    res.status(401).json({ message: "Need to be logged in to do that" });
     return;
 }
 next();
