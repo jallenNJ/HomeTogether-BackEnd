@@ -19,7 +19,7 @@ router.get('/', async (req, res, next)=> {
 
   } catch(ex){
     console.error(ex);
-    res.json({status:false});
+    res.status(500).json({status:false});
     return;
   }
   
@@ -31,13 +31,11 @@ async function resolveIds(idString, req, res){
 
   var idArray = idString.split(",")
   .map((str) => { return ObjectID(str.trim()) });
-
-  console.log("IDARRAY" + JSON.stringify(idArray) + " " + idString);
   try{
     var usernames = await req.collections.users.find({_id:{$in:idArray}}).project({pass: 0}).toArray();
   } catch(ex){
     console.error(ex);
-    res.json({status:false});
+    res.status(500).json({status:false});
   }
   res.json({status:true, names:usernames});
 }
