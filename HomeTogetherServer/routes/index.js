@@ -26,13 +26,13 @@ router.put('/login', async function(req, res, next) {
 	//Make sure they entered a username and password
   let username = req.body.user;
   if(!username){
-    res.json({status:false, message:"Please enter a user name"});
+    res.status(400).json({message:"Please enter a user name"});
     return;
   }
 
   let rawpass = req.body.pass;
   if(!rawpass){
-    res.json({status:false, message:"Please enter a password"});
+    res.status(400).json({message:"Please enter a password"});
     return;
   }
 
@@ -43,7 +43,7 @@ router.put('/login', async function(req, res, next) {
 		var sameUser = await req.collections.users.findOne({user:username, $options : 'i'});
 		
 		if(sameUser){
-			res.json({status:false, message: "User already exists"});
+			res.status(409).json({message: "User already exists"});
 			return;
 		} 
 
@@ -57,12 +57,12 @@ router.put('/login', async function(req, res, next) {
 	}catch (ex){
 		//Catch any database errors and log
     console.log(ex);
-    res.json({stats:false, message:"Creation failed, try again later"});
+    res.status(500).json({ message:"Creation failed, try again later"});
     return;
 	}
 
 	//Inform the user of the successful creation
-  res.json({status:true, message:"User Created"});
+  res.json({message:"User Created"});
   return;
 });
 
@@ -79,7 +79,7 @@ router.post('/login', async function(req, res, next){
 		//Find the user in the database
 		var user = await req.collections.users.findOne({user:username});
 		if(!user){
-			res.json({status:false, message: "No user found"});
+			res.status(404).json({message: "No user found"});
 			return;
 		}
 
@@ -89,23 +89,23 @@ router.post('/login', async function(req, res, next){
 		if(match){ //If match, authenticate the user and update the sessions
       req.session.username = username;
       req.session.userId = user._id;
-			res.json({status:true, message: "Login Successful"});
+			res.json({message: "Login Successful"});
 			return;
 		} else{ //Reject the request
-			res.json({status:false, message: "Incorrect password"});
+			res.status(401).attachmentjson({ message: "Incorrect password"});
 			return;
 		}
 
 	} catch (ex){
 		console.log(ex);
+		res.status(500).json({status:false});
 	}
 });
 
 //This route is for when a client wants to log out and end their session explictly 
 router.get('/logout', (req, res, next)=>{
 	delete req.session.username;
-	res.json({status:true});
-	//res.redirect("/login.html");
+	res.status(204).send();
 });
 
 module.exports = router;
