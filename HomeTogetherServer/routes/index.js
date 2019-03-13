@@ -40,8 +40,10 @@ router.put('/login', async function(req, res, next) {
 	
 	try{
 		//Ensure the username is not taken already
-		var sameUser = await req.collections.users.findOne({user:username, $options : 'i'});
+		var sameUser = await req.collections.users.findOne({ user : { $regex : new RegExp(username, "i") } });
 		
+
+
 		if(sameUser){
 			res.status(409).json({message: "User already exists"});
 			return;
@@ -62,7 +64,7 @@ router.put('/login', async function(req, res, next) {
 	}
 
 	//Inform the user of the successful creation
-  res.json({message:"User Created"});
+  res.status(201).json({status:true});
   return;
 });
 
@@ -92,7 +94,7 @@ router.post('/login', async function(req, res, next){
 			res.json({message: "Login Successful"});
 			return;
 		} else{ //Reject the request
-			res.status(401).attachmentjson({ message: "Incorrect password"});
+			res.status(401).json({ message: "Incorrect password"});
 			return;
 		}
 

@@ -215,7 +215,7 @@ router.put('/pantry', async (req, res, next) => {
     }
     var newEntry = formatPantryObject(req.body);
     if(newEntry === undefined){
-        res.status(400).json({, message:"Invalid object format"});
+        res.status(400).json({message:"Invalid object format"});
         return;
     }
     //False means function sent headers
