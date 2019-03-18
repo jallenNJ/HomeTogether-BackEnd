@@ -3,6 +3,7 @@ var express = require('express');
 var path = require('path');
 var cookieParser = require('cookie-parser');
 const ex_session = require('express-session');
+const ip = require("ip");
 var logger = require('morgan');
 
 
@@ -77,7 +78,7 @@ async function connectToDb(){
      return;
   }
 
-  console.log ("Server is running on: " + require("ip").address());
+  console.log ("Server is running on: " + ip.address());
   try{
     connection = await MongoClient.connect(url,{ useNewUrlParser: true });
     const db = connection.db('home-together-nosql');
@@ -90,12 +91,44 @@ async function connectToDb(){
   } catch(ex){
     console.log(ex);
     console.log("Connected to only some collections");
+    bindConsoleInput();
     return;
   }
 
   console.log("Connected to all collections")
+  bindConsoleInput();
 }
 
 connectToDb();
+
+function bindConsoleInput(){
+
+  console.log();
+  console.log("Console CLI is now running");
+  const stdin = process.openStdin();
+
+  stdin.addListener("data", function(d) {
+      // note:  d is an object, and when converted to a string it will
+      // end with a linefeed.  so we (rather crudely) account for that  
+      // with toString() and then trim() 
+      //console.log("you entered: [" + 
+      //    d.toString().trim() + "]");
+      let input = d.toString().trim();
+      switch(input){
+        case "exit":
+          console.log("Server will close");
+          process.exit(0);
+          break;
+        case "ip":
+          console.log ("Server is running on: " + ip.address());   
+          break;   
+        default:
+          console.log("No action for string: " + input);
+          break;  
+      }
+    });
+  
+}
+
 
 module.exports = app;
