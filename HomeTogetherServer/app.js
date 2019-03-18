@@ -77,7 +77,7 @@ async function connectToDb(){
      return;
   }
 
-
+  console.log ("Server is running on: " + require("ip").address());
   try{
     connection = await MongoClient.connect(url,{ useNewUrlParser: true });
     const db = connection.db('home-together-nosql');
