@@ -6,16 +6,12 @@ const ex_session = require('express-session');
 const ip = require("ip");
 var logger = require('morgan');
 
-
 const MongoClient = require('mongodb').MongoClient;
 
 require('dotenv').config();
 
 const url = process.env.noSqlDatabase;
 const allCollections = {};
-
-
-
 
 var indexRouter = require('./routes/index');
 var houseRouter = require('./routes/household');
@@ -107,21 +103,49 @@ function bindConsoleInput(){
   console.log("Console CLI is now running");
   const stdin = process.openStdin();
 
-  stdin.addListener("data", function(d) {
+    stdin.addListener("data", function(d) {
       // note:  d is an object, and when converted to a string it will
       // end with a linefeed.  so we (rather crudely) account for that  
       // with toString() and then trim() 
       //console.log("you entered: [" + 
       //    d.toString().trim() + "]");
       let input = d.toString().trim();
-      switch(input){
+      let tokens = input.split(" ");
+      
+      switch(tokens[0]){
         case "exit":
           console.log("Server will close");
           process.exit(0);
           break;
         case "ip":
           console.log ("Server is running on: " + ip.address());   
-          break;   
+          break;
+          
+        case "user":
+          if(tokens[1] == "info"){
+           if(tokens[2] == undefined){
+             console.log("No user specified");
+             return;
+           }
+           x = async () =>{
+             try{
+                let result = await allCollections.users.findOne({user:tokens[2]});
+                if(result){
+                  console.log("Found: " + JSON.stringify(result));
+                } else{
+                  console.log("No info for " + tokens[2]);
+                }
+
+             }catch(ex){
+               console.error("Failed to find data on " + tokens[2] + " error: " + ex);
+               return;
+             }
+           };
+           x();
+          }
+
+
+          break;  
         default:
           console.log("No action for string: " + input);
           break;  
