@@ -27,131 +27,131 @@ app.use(logger('dev'));
 app.use(express.json());
 app.use(express.urlencoded({ extended: false }));
 app.use(cookieParser("homeTogether"));
-app.use(ex_session({ secret: 'homeTogether', resave: false, saveUninitialized:false })); //If touch/rolling is enabled, set resave to true
+app.use(ex_session({ secret: 'homeTogether', resave: false, saveUninitialized: false })); //If touch/rolling is enabled, set resave to true
 app.use(express.static(path.join(__dirname, 'public')));
 
 
-app.use((req, res, next) =>{
-  req.collections = allCollections;
-  next();
+app.use((req, res, next) => {
+	req.collections = allCollections;
+	next();
 });
 
 app.use('/', indexRouter);
-app.use((req,res,next) =>{ //Ensures user is logged in
+app.use((req, res, next) => { //Ensures user is logged in
 
-  if (!req.session.username) {
-    console.log("Unauthorized user attempting to access a protected route");
-    res.status(401).json({ message: "Need to be logged in to do that" });
-    return;
-}
-next();
+	if (!req.session.username) {
+		console.log("Unauthorized user attempting to access a protected route");
+		res.status(401).json({ message: "Need to be logged in to do that" });
+		return;
+	}
+	next();
 
 });
 app.use('/household', houseRouter);
 app.use('/users', userRouter);
 
 // catch 404 and forward to error handler
-app.use(function(req, res, next) {
-  next(createError(404));
+app.use(function (req, res, next) {
+	next(createError(404));
 });
 
 // error handler
-app.use(function(err, req, res, next) {
-  // set locals, only providing error in development
-  res.locals.message = err.message;
-  res.locals.error = req.app.get('env') === 'development' ? err : {};
+app.use(function (err, req, res, next) {
+	// set locals, only providing error in development
+	res.locals.message = err.message;
+	res.locals.error = req.app.get('env') === 'development' ? err : {};
 
-  // render the error page
-  res.status(err.status || 500);
-  res.render('error');
+	// render the error page
+	res.status(err.status || 500);
+	res.render('error');
 });
 
 
-async function connectToDb(){
+async function connectToDb() {
 
-  if(url == undefined){
-     console.log("Nosql connection string missing")
-     return;
-  }
+	if (url == undefined) {
+		console.log("Nosql connection string missing")
+		return;
+	}
 
-  console.log ("Server is running on: " + ip.address());
-  try{
-    connection = await MongoClient.connect(url,{ useNewUrlParser: true });
-    const db = connection.db('home-together-nosql');
-    allCollections.households = await db.createCollection("households");
-    allCollections.users = await db.createCollection("users");
+	console.log("Server is running on: " + ip.address());
+	try {
+		connection = await MongoClient.connect(url, { useNewUrlParser: true });
+		const db = connection.db('home-together-nosql');
+		allCollections.households = await db.createCollection("households");
+		allCollections.users = await db.createCollection("users");
 
-    
+
 		//Get the collection
-     // collection = await db.createCollection("contacts");
-  } catch(ex){
-    console.log(ex);
-    console.log("Connected to only some collections");
-    bindConsoleInput();
-    return;
-  }
+		// collection = await db.createCollection("contacts");
+	} catch (ex) {
+		console.log(ex);
+		console.log("Connected to only some collections");
+		bindConsoleInput();
+		return;
+	}
 
-  console.log("Connected to all collections")
-  bindConsoleInput();
+	console.log("Connected to all collections")
+	bindConsoleInput();
 }
 
 connectToDb();
 
-function bindConsoleInput(){
+function bindConsoleInput() {
 
-  console.log();
-  console.log("Console CLI is now running");
-  const stdin = process.openStdin();
+	console.log();
+	console.log("Console CLI is now running");
+	const stdin = process.openStdin();
 
-    stdin.addListener("data", function(d) {
-      // note:  d is an object, and when converted to a string it will
-      // end with a linefeed.  so we (rather crudely) account for that  
-      // with toString() and then trim() 
-      //console.log("you entered: [" + 
-      //    d.toString().trim() + "]");
-      let input = d.toString().trim();
-      let tokens = input.split(" ");
-      
-      switch(tokens[0]){
-        case "exit":
-          console.log("Server will close");
-          process.exit(0);
-          break;
-        case "ip":
-          console.log ("Server is running on: " + ip.address());   
-          break;
-          
-        case "user":
-          if(tokens[1] == "info"){
-           if(tokens[2] == undefined){
-             console.log("No user specified");
-             return;
-           }
-           x = async () =>{
-             try{
-                let result = await allCollections.users.findOne({user:tokens[2]});
-                if(result){
-                  console.log("Found: " + JSON.stringify(result));
-                } else{
-                  console.log("No info for " + tokens[2]);
-                }
+	stdin.addListener("data", function (d) {
+		// note:  d is an object, and when converted to a string it will
+		// end with a linefeed.  so we (rather crudely) account for that  
+		// with toString() and then trim() 
+		//console.log("you entered: [" + 
+		//    d.toString().trim() + "]");
+		let input = d.toString().trim();
+		let tokens = input.split(" ");
 
-             }catch(ex){
-               console.error("Failed to find data on " + tokens[2] + " error: " + ex);
-               return;
-             }
-           };
-           x();
-          }
+		switch (tokens[0]) {
+			case "exit":
+				console.log("Server will close");
+				process.exit(0);
+				break;
+			case "ip":
+				console.log("Server is running on: " + ip.address());
+				break;
+
+			case "user":
+				if (tokens[1] == "info") {
+					if (tokens[2] == undefined) {
+						console.log("No user specified");
+						return;
+					}
+					x = async () => {
+						try {
+							let result = await allCollections.users.findOne({ user: tokens[2] });
+							if (result) {
+								console.log("Found: " + JSON.stringify(result));
+							} else {
+								console.log("No info for " + tokens[2]);
+							}
+
+						} catch (ex) {
+							console.error("Failed to find data on " + tokens[2] + " error: " + ex);
+							return;
+						}
+					};
+					x();
+				}
 
 
-          break;  
-        default:
-          console.log("No action for string: " + input);
-          break;  
-      }
-    });
-  
+				break;
+			default:
+				console.log("No action for string: " + input);
+				break;
+		}
+	});
+
 }
 
 
