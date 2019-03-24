@@ -2,6 +2,8 @@ var express = require('express');
 var router = express.Router();
 const ObjectID = require('mongodb').ObjectID
 
+const shoppingListStr = "shopping";
+const shoppingListLoc = [shoppingListStr];
 
 //This function is responsible for querying a single household from the data base and
 //  may call the allHouseQuery function if a user attempts to access the route before that is called.
@@ -181,7 +183,7 @@ router.get('/pantry', async (req, res, next) => {
 	}
 	try {
 		//Get the object
-		var pantryObj = await req.collections.households.find({ _id: ObjectID(req.session.activeHousehold) }, { pantry: 1, _id: 0 }).toArray();
+		var pantryObj = await req.collections.households.find({ _id: ObjectID(req.session.activeHousehold), pantry:{$nin:shoppingListLoc}  }, { pantry: 1, _id: 0 }).toArray();
 
 	} catch (ex) {
 		//Log any errors that occur and give a generic error to client
@@ -201,6 +203,7 @@ router.get('/pantry', async (req, res, next) => {
 
 
 //Add an item to the pantry 
+//TODO: FIX DUPE NAMES
 router.put('/pantry', async (req, res, next) => {
 
 	if (!checkIfInHousehold(req)) {
@@ -211,11 +214,12 @@ router.put('/pantry', async (req, res, next) => {
 
 
 	if (!validatePantryFieldsExist(req.body, res)) {
+		console.log("Invalid pantry fields");
 		return;
 	}
 	var newEntry = formatPantryObject(req.body);
 	if (newEntry === undefined) {
-		res.status(400).json({ message: "Invalid object format" });
+		res.status(400).json({ message: "Invalid object format" + JSON.stringify(req.body)});
 		return;
 	}
 	//False means function sent headers
@@ -346,11 +350,12 @@ router.put("/member", async (req, res, next) => {
 
 function validatePantryFieldsExist(pantryItem, res) {
 	//The keys which must exist
-	let keys = ["name", "quantity", "expires", "category", "tag"]
+	let keys = ["name", "quantity", "expires", "category", "tags", "location"]
 	//If any of them are missing, notify client of invalid request
 	for (key of keys) {
 		if (!pantryItem[key]) {
-			res.json({ status: false, message: "Required field invalid" });
+			console.log("Invalid input of" + JSON.stringify(pantryItem) + " to validation on key" +key);
+			res.status(400).json({ status: false, message: "Required field invalid" });
 			return false;
 		}
 	}
@@ -373,7 +378,8 @@ function formatPantryObject(pantryItem) {
 		name: pantryItem.name,
 		quantity: pantryItem.quantity,
 		category: pantryItem.category,
-		expires: pantryItem.expires
+		expires: pantryItem.expires,
+		location: pantryItem.location
 	};
 
 	//If the quanity is less than 0, obviously incorrect
@@ -388,7 +394,7 @@ function formatPantryObject(pantryItem) {
 	// }
 
 
-	let rawTags = pantryItem.tag;
+	let rawTags = pantryItem.tags;
 	//Split the tags on the commas, trim the extra whitespace, and remove duplicates to store only required data
 	newEntry.tags = rawTags.split(",")
 		.map((str) => { return str.trim() })
