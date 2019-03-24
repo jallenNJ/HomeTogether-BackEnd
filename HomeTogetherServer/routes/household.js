@@ -183,7 +183,7 @@ router.get('/pantry', async (req, res, next) => {
 	}
 	try {
 		//Get the object
-		var pantryObj = await req.collections.households.find({ _id: ObjectID(req.session.activeHousehold), pantry:{$nin:shoppingListLoc}  }, { pantry: 1, _id: 0 }).toArray();
+		var pantryObj = await req.collections.households.find({ _id: ObjectID(req.session.activeHousehold)}, { pantry: 1, _id: 0 }).toArray();
 
 	} catch (ex) {
 		//Log any errors that occur and give a generic error to client
@@ -195,6 +195,19 @@ router.get('/pantry', async (req, res, next) => {
 	if (!pantryObj[0].pantry) {
 		pantryObj[0].pantry = [];
 	}
+	let forShopping = req.query.shopping? true:false;
+
+	for(let i = pantryObj[0].pantry.length -1; i >=0; i--){
+		let entry = pantryObj[0].pantry[i];
+		let isShopping = entry.location == shoppingListStr
+		
+		if(forShopping != isShopping){
+			console.log("Tossing" + JSON.stringify(entry));
+			pantryObj[0].pantry.splice(i, 1);
+		}
+	}
+
+
 	res.json({ status: true, pantry: pantryObj[0].pantry });
 
 
