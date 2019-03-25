@@ -1,3 +1,8 @@
+/**
+ * @file app.js
+ * @brief Contains the main middleware stack for the server
+ */
+
 var createError = require('http-errors');
 var express = require('express');
 var path = require('path');
@@ -66,7 +71,11 @@ app.use(function (err, req, res, next) {
 	res.render('error');
 });
 
-
+/**
+ * @brief connects to the database
+ *  Stores the connections in member variable allCollections
+ * 
+ */
 async function connectToDb() {
 
 	if (url == undefined) {
@@ -97,6 +106,9 @@ async function connectToDb() {
 
 connectToDb();
 
+/**
+ * @brief Sets up the console to take in input, and handle commands
+ */
 function bindConsoleInput() {
 
 	console.log();

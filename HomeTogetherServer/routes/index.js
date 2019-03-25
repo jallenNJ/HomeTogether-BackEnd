@@ -1,3 +1,8 @@
+/**
+ * @file index.js
+ * @brief Contains all unhandled and public routes. 
+ */
+
 var express = require('express');
 var router = express.Router();
 var bcrypt = require("bcrypt");
@@ -9,6 +14,10 @@ router.get('/', function (req, res, next) {
 });
 
 
+/** 
+ * @brief Returns true/false to the user if they are logged in
+ *  
+ */
 
 router.get('/authcheck', function (req, res, next) {
 	var returnVal = false;
@@ -19,7 +28,9 @@ router.get('/authcheck', function (req, res, next) {
 
 })
 
-//Function to create a new user. The user needs to specify the username and password they want to use
+/**
+ * @brief Function to create a new user. The user needs to specify the username and password they want to use
+ */
 router.put('/login', async function (req, res, next) {
 
 
@@ -68,8 +79,9 @@ router.put('/login', async function (req, res, next) {
 	return;
 });
 
-//This is the route to handle an existing user trying to log into their account
-//	and become authenticated.
+/**
+ * @brief This is the route to handle an existing user trying to log into their account	and become authenticated.
+ */
 router.post('/login', async function (req, res, next) {
 
 	//Get the fields from request
@@ -104,7 +116,9 @@ router.post('/login', async function (req, res, next) {
 	}
 });
 
-//This route is for when a client wants to log out and end their session explictly 
+/**
+ * @brief This route is for when a client wants to log out and end their session explictly 
+ */
 router.get('/logout', (req, res, next) => {
 	delete req.session.username;
 	res.status(204).send();

@@ -1,8 +1,16 @@
+/**
+ * @file users.js
+ * @brief Handles all routes directed to users which need authentication
+ */
+
 var express = require('express');
 var router = express.Router();
 const ObjectID = require('mongodb').ObjectID
 
 /* GET users listing. */
+/**
+ * @brief Get user ids that match string, or convert and id to a name
+ */
 router.get('/', async (req, res, next) => {
 	//TODO: Add log in check
 
@@ -26,7 +34,12 @@ router.get('/', async (req, res, next) => {
 	res.json({ status: true, users: users });
 
 });
-
+/**
+ * @brief Converts A commaseperated string of MongoIds to their usernames
+ * @param idString {String} the MongoID to resolve, in the form a comma seperated string
+ * @param  req {Object} Express req object
+ * @param  res {Object} Express res object
+ */
 async function resolveIds(idString, req, res) {
 
 	var idArray = idString.split(",")

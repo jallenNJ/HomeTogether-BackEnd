@@ -1,3 +1,10 @@
+/**
+ * @file household.js
+ * @brief Router for /household/*
+ * 
+ */
+
+
 var express = require('express');
 var router = express.Router();
 const ObjectID = require('mongodb').ObjectID
@@ -9,14 +16,14 @@ const shoppingListLoc = [shoppingListStr];
 //  may call the allHouseQuery function if a user attempts to access the route before that is called.
 
 /**
+ * @brief This function gets information for a specified household
 *This function is responsible for querying a single household from the data base and
 *  may call the allHouseQuery function if a user attempts to access the route before that is called.
 *
-* @method singleHouseQuery
-* @param {Object} req Incoming request
-* @param {Object} res The response to send
-* @param {Function} next The next middle ware function to call
-* @return {undefined} Returns undefined on DB look-up error
+* @param req {Object} Incoming request
+* @param res {Object} The response to send
+* @param next {Function}  The next middle ware function to call
+* @return undefined Returns undefined on DB look-up error
 */
 async function singleHouseQuery(req, res, next) {
 
@@ -73,8 +80,13 @@ async function singleHouseQuery(req, res, next) {
 	return;
 }
 
-//This function is responsible for querying all households that a user is in, and intializing the 
-//  sessions households to all households they are apart of
+/**
+ * @brief Queries all households that the user is apart of, and inits session
+ * @param req {Object} Incoming request
+ * @param res {Object} The response to send
+ * @param next {Function}  The next middle ware function to call 
+ * @return False if sends headers, {households:[result]} on success. Will return [] if no results
+ */
 async function allHouseQuery(req, res, next) {
 	if (req.session.households === undefined) {
 		req.session.households = [];
@@ -104,16 +116,20 @@ async function allHouseQuery(req, res, next) {
 }
 
 //Get to the household
-//Handles both all households an single household
-//  Makes use of two helper function which seperate the functionality of all and single
-//Single Household requires the query parameter id to be present
-//  Also supports the ability to get the cache data
 
 
-//All households takes no parameters and returns the list of all households the user is a member of
-//Status parameter of result guarenteed to exist. May contain message on failure or house on caching
-//  or the list of households
 
+/**
+ * @brief Handles the get for /household. Calls helper functions to do the work
+ * Handles both all households an single household
+ *	  Makes use of two helper function which seperate the functionality of all and single
+ *	Single Household requires the query parameter id to be present
+ *	  Also supports the ability to get the cache data
+ *	All households takes no parameters and returns the list of all households the user is a member of
+ * @param req {Object} Incoming request
+ * @param res {Object} The response to send
+ * @param next {Function}  The next middle ware function to call
+ */
 router.get('/', async function (req, res, next) {
 
 	//==Start of single house query
@@ -138,8 +154,15 @@ router.get('/', async function (req, res, next) {
 	return;
 });
 
-//Route for creating a new household
-//Status and Message fields will always exist in repsonse, however message may be the empty string;
+
+/**
+ * @brief Handles new households being created
+ * 
+ * 
+ * @param req {Object} Incoming request
+ * @param res {Object} The response to send
+ * @param next {Function}  The next middle ware function to call
+ */
 router.put('/', async (req, res, next) => {
 
 
@@ -174,8 +197,12 @@ router.put('/', async (req, res, next) => {
 
 
 
-//Gets the data of what items are inside the pantry 
-//Status will always exist. On errors, message will exist, otherwise the pantry field will exist
+/**
+ * @brief Get to the pantry of an already selected households from the user's session
+ * @param req {Object} Incoming request
+ * @param res {Object} The response to send
+ * @param next {Function}  The next middle ware function to call
+ */
 router.get('/pantry', async (req, res, next) => {
 	if (!checkIfInHousehold(req)) {
 		res.status(401).json({ status: false, message: "User not in household" });
@@ -217,6 +244,12 @@ router.get('/pantry', async (req, res, next) => {
 
 //Add an item to the pantry 
 //TODO: FIX DUPE NAMES
+/**
+ * @brief Add an item to the pantry of the session's current household
+ * @param req {Object} Incoming request
+ * @param res {Object} The response to send
+ * @param next {Function}  The next middle ware function to call
+ */
 router.put('/pantry', async (req, res, next) => {
 
 	if (!checkIfInHousehold(req)) {
@@ -257,6 +290,16 @@ router.put('/pantry', async (req, res, next) => {
 //      The route will deny the change due to being unable to find the item in the pantry.
 //
 // Status field will exist on all responses to this route
+
+/**
+ * @brief To update an object within the pantry of the active session
+ *	Uses the name of the item as a primary key, so if a front end submits a change to the name,
+ *		The route will deny the change due to being unable to find the item in the pantry.
+ * 
+ * @param req {Object} Incoming request
+ * @param res {Object} The response to send
+ * @param next {Function}  The next middle ware function to call
+ */
 router.patch("/pantry", async (req, res, next) => {
 
 	//Make sure the user is in the household, should always be true but good to check
@@ -292,6 +335,15 @@ router.patch("/pantry", async (req, res, next) => {
 //Route to delete data from the user's pantry
 // The name is the only required field as it is used to find the item in the pantry.
 // TODO: Make use of the quanity field to only remove select amounts? Or just leave for update?
+
+/**
+ * @Brief Route to delete an item in the active session's pantry
+ * 
+ * 
+* @param req {Object} Incoming request
+ * @param res {Object} The response to send
+ * @param next {Function}  The next middle ware function to call
+ */
 router.delete("/pantry", async (req, res, next) => {
 
 	//Make sure user is in house, should always pass but good to check
@@ -319,7 +371,14 @@ router.delete("/pantry", async (req, res, next) => {
 
 })
 
-
+/**
+ * 
+ * @brief Route to add a member to the active household
+ * 
+ * @param req {Object} Incoming request
+ * @param res {Object} The response to send
+ * @param next {Function}  The next middle ware function to call
+ */
 router.put("/member", async (req, res, next) => {
 
 	if (!req.body.username) {
@@ -361,6 +420,14 @@ router.put("/member", async (req, res, next) => {
 
 //});
 
+
+/**
+ * @brief Ensure an object contains all the required fields to be added to the pantry
+ * 
+ * @param {Object} pantryItem The object being checked to ensure it has required fields
+ * @param res {Object} The express response object
+ * @return {boolean} True if valid, false if not valid **AND** sends rejection JSON
+ */
 function validatePantryFieldsExist(pantryItem, res) {
 	//The keys which must exist
 	let keys = ["name", "quantity", "expires", "category", "tags", "location"]
@@ -377,6 +444,12 @@ function validatePantryFieldsExist(pantryItem, res) {
 
 }
 
+/**
+ * @brief Convert a valid potential pantryItem into a pantry item
+ * 
+ * @param {Object} pantryItem A validated object to be formatted into the database form 
+ * @return undefined if undefined parameter. false if field contains invalid data, Formatted object otherwise
+ */
 function formatPantryObject(pantryItem) {
 
 
@@ -422,6 +495,15 @@ function formatPantryObject(pantryItem) {
 //This function returns true or false for if the user is a member of the activehousehold
 // Right now it will always be true, however once a user is allowed to be removed from a household, it will be a good
 //  safety net.
+
+/**
+ * @brief See if the user is in the household trying to modify
+ * 
+ * Right now it will always be true, however once a user is allowed to be removed from a household, it will be a good
+ *  safety net.
+ * @param req {Object} The express request object 
+ * @return {boolean} True if in the household, False otherwise
+ */
 function checkIfInHousehold(req) {
 	for (house of req.session.households) {
 		if (house._id == req.session.activeHousehold) {
