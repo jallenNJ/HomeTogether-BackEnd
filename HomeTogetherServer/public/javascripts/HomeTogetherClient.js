@@ -25,15 +25,19 @@ $(document).ready(()=>{
 
         }        
     $("button").on("click", click);
-    $(document).on("keypress", (key)=>{if(key.which == 13){click()}}); 
-
-   
+    $(document).on("keypress", (key)=>{
+        if(key.which == 13){
+            click()
+        }
+    });    
 });
 
 function  selectHousehold(){
     $.get("/household",
     {id:$(this).data("id"), activeData:true},
-    (data)=>{houseData = data.house; delete houseData.pantry; loadHouse();}
+    (data)=>{houseData = data.house; 
+        delete houseData.pantry;
+        loadHouse();}
     );
 }
 
