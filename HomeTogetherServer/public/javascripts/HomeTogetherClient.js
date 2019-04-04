@@ -152,6 +152,7 @@ function generateRow (keys, rowData){
 
 function generatePantryForm(keys){
     let form = $("<form></form>");
+    form.prop("id", "pantryForm");
     for(let key of keys){
         let id = "pf"+key;
         form.append($("<label></label>").prop("for", id).text(key));
@@ -163,7 +164,7 @@ function generatePantryForm(keys){
 
 function validatePantryForm(){
 
-    for(let field of $("form input")){
+    for(let field of $("#pantryForm input")){
         if($(field).val() === ""){
             console.log("False on " + $(field).prop("id"));
             return false;
@@ -173,7 +174,7 @@ function validatePantryForm(){
     return true;
 }
 function clearPantryForm(){
-    for(let field of $("form input")){
+    for(let field of $("#pantryForm input")){
         $(field).val("");
     }
     $("form input").first().prop("readonly", false);
@@ -185,9 +186,9 @@ function prefillForm(){
         fieldText.push($(child).text());
     }
     let index = 0;
-    for(let field of $("form input")){
+    for(let field of $("#pantryForm input")){
         $(field).val(fieldText[index]);
         index++;
     }
-    $("form input").first().prop("readonly", true);
+    $("#pantryForm input").first().prop("readonly", true);
 }
