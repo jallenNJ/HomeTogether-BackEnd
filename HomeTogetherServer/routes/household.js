@@ -189,7 +189,7 @@ router.put('/', async (req, res, next) => {
 		res.status(500).json({ message: "" });
 	}
 
-	res.status(204).send();
+	res.status(200).send({status:true});
 	return;
 
 
@@ -229,7 +229,6 @@ router.get('/pantry', async (req, res, next) => {
 		let isShopping = entry.location == shoppingListStr
 		
 		if(forShopping != isShopping){
-			console.log("Tossing" + JSON.stringify(entry));
 			pantryObj[0].pantry.splice(i, 1);
 		}
 	}

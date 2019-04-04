@@ -1,5 +1,11 @@
 extends layout
 
 block content
-  h1= title
-  p Welcome to #{title}
+	form(action="/login", method="post")
+		label(for="userLogin") Username: 
+		input(type="text", name="user", id="userLogin")
+		br
+		label(for="passLogin") Password: 
+		input(type="password", name="pass", id="passLogin")
+		br
+		button(type="button") Log in!
