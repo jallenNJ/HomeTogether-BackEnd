@@ -3,7 +3,8 @@ var body;
 
 $(document).ready(()=>{
     body = $("body");
-    $("button").on("click", ()=>{
+    const click = ()=>{
+        $(document).off("keypress");
         $.post(
             "/login",
             $("form").serialize(),
@@ -21,7 +22,12 @@ $(document).ready(()=>{
                     }
                 });
             });
-    });
+
+        }        
+    $("button").on("click", click);
+    $(document).on("keypress", (key)=>{if(key.which == 13){click()}}); 
+
+   
 });
 
 function  selectHousehold(){
@@ -54,6 +60,9 @@ function generateTable(tableData, keys){
         for(let key of keys){
             let cell = rowData? $("<td></td>").text(rowData[key]):$("<th></th>").text(key); 
             row.append(cell);
+        }
+        if(rowData){
+            row.on("click", (clicked)=>{$(clicked).toggleClass("selected");});
         }
         return row;
 
