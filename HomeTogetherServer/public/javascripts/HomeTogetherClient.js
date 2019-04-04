@@ -58,11 +58,30 @@ function loadPantry(pantryData){
     generatePantryForm(keys);
 
     body.append($("<button></button>").text("Delete"));
+
     body.append($("<button></button>").text("Clear").on("click", ()=>{
         clearPantryForm();
         $(".selectedItem").removeClass("selectedItem");
     }));
-    body.append($("<button></button>").text("Update"));
+
+    body.append($("<button></button>").text("Update").on("click", ()=>{
+        if(!validatePantryForm()){
+            console.log("Implement handling on empty form on updated");
+            return;
+        }
+        let selected = $(".selectedItem");
+        $.ajax({
+            type:"patch",
+            url:"/household/pantry",
+            data: $("form").serialize(),
+            success:(data)=>{ 
+                selected.replaceWith(generateRow(keys, data.updated));
+                clearPantryForm();
+            }
+        });
+    }));
+
+
     body.append($("<button></button>").text("Create").on("click", ()=>{
         if(!validatePantryForm()){
             console.log("Implement handling on empty form")
