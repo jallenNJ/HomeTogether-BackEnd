@@ -39,34 +39,31 @@ function loadHouse(){
 
 function loadPantry(pantryData){
     body.empty();
+    let keys = ["name", "quanitity", "expires", "category", "tags"];
+    generateTable(pantryData, keys);
+   
+}
+
+function generateTable(tableData, keys){
     let table = ($("<table></table>"));
     body.append(table);
    
-    let headers = $("<tr></tr>");
 
-    for(let header in pantryData[0]){
-        if(!pantryData[0].hasOwnProperty(header)){
-            continue;
+    const generateRow = (rowData) =>{
+        let row = $("<tr></tr>");
+        for(let key of keys){
+            let cell = rowData? $("<td></td>").text(rowData[key]):$("<th></th>").text(key); 
+            row.append(cell);
         }
-        let headerCell = $("<th></th>").text(header);
-        headers.append(headerCell);
+        return row;
 
     }
     let tHead = $("<thead></thead>");
-    tHead.append(headers);
+    tHead.append(generateRow(undefined));
     table.append(tHead);
     let tBody = $("<tbody></tbody>");
     table.append(tBody);
-    for(let rowData of pantryData){
-        let row = $("<tr></tr>");
-        for(let cellData in rowData){
-            if(!rowData.hasOwnProperty(cellData)){
-                continue;
-            }
-            let cell = $("<td></td>");
-            cell.text(rowData[cellData]);
-            row.append(cell);
-        }
-        tBody.append(row);
+    for(let rowData of tableData){
+        tBody.append(generateRow(rowData));
     }
 }
