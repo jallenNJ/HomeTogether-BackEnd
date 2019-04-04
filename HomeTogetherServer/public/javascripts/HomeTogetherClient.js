@@ -4,7 +4,7 @@ var body;
 $(document).ready(()=>{
     body = $("body");
     const click = ()=>{
-        $(document).off("keypress");
+        $(document).off("keypress", click);
 
         $.post(
             "/login",
@@ -46,36 +46,42 @@ function loadHouse(){
     body.empty();
     body.append($("<p> Do member bar</p>"));
     body.append($("<button> Pantry </button>")).on("click", $.get("/household/pantry", {}, (data)=>{ 
-        $("button").off("click");
         loadPantry(data.pantry)}
         ));
 }
 
 function loadPantry(pantryData){
     body.empty();
-    let keys = ["name", "quantity", "expires", "category", "tags"];
+    let keys = ["name", "quantity", "expires", "category", "tags", "location"];
     generateTable(pantryData, keys);
     generatePantryForm(keys);
 
     body.append($("<button></button>").text("Delete"));
     body.append($("<button></button>").text("Update"));
-    body.append($("<button></button>").text("Create"));
+    body.append($("<button></button>").text("Create").on("click", ()=>{
+        if(!validatePantryForm()){
+            console.log("Implement handling on empty form")
+            return;
+        }
+        $.ajax({
+            type:"put",
+            url:"/household/pantry",
+            data: $("form").serialize(),
+            success:(data)=>{$("table").append(generateRow(keys, data.entry));}
+
+    });
+
+
+
+    }));
 }
 
 function generateTable(tableData, keys){
     let table = ($("<table></table>"));
     body.append(table);
    
-    const generateRow = (rowData) =>{
-        let row = $("<tr></tr>");
-        for(let key of keys){
-            let cell = rowData? $("<td></td>").text(rowData[key]):$("<th></th>").text(key); 
-            row.append(cell);
-        }
-        return row;
-    }
     let tHead = $("<thead></thead>");
-    tHead.append(generateRow(undefined));
+    tHead.append(generateRow(keys, undefined));
     table.append(tHead);
     let tBody = $("<tbody></tbody>");
     tBody.on("click", "tr", function(){
@@ -85,8 +91,16 @@ function generateTable(tableData, keys){
     });
     table.append(tBody);
     for(let rowData of tableData){
-        tBody.append(generateRow(rowData));
+        tBody.append(generateRow(keys, rowData));
     }
+}
+function generateRow (keys, rowData){
+    let row = $("<tr></tr>");
+    for(let key of keys){
+        let cell = rowData ? $("<td></td>").text(rowData[key]):$("<th></th>").text(key); 
+        row.append(cell);
+    }
+    return row;
 }
 
 function generatePantryForm(keys){
@@ -94,8 +108,23 @@ function generatePantryForm(keys){
     for(let key of keys){
         let id = "pf"+key;
         form.append($("<label></label>").prop("for", id).text(key));
-        form.append($("<input></input>").prop("id", id));
+        form.append($("<input></input>").prop("id", id).prop("name", key));
 
     }
     body.append(form);
+}
+
+function validatePantryForm(){
+
+    for(let field of $("form input")){
+        if($(field).val() === ""){
+            console.log("False on " + $(field).prop("id"));
+            return false;
+        }
+    }
+
+    return true;
+}
+function clearPantryForm(){
+
 }
