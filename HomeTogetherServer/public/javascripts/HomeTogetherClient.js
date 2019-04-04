@@ -58,6 +58,10 @@ function loadPantry(pantryData){
     generatePantryForm(keys);
 
     body.append($("<button></button>").text("Delete"));
+    body.append($("<button></button>").text("Clear").on("click", ()=>{
+        clearPantryForm();
+        $(".selectedItem").removeClass("selectedItem");
+    }));
     body.append($("<button></button>").text("Update"));
     body.append($("<button></button>").text("Create").on("click", ()=>{
         if(!validatePantryForm()){
@@ -68,7 +72,10 @@ function loadPantry(pantryData){
             type:"put",
             url:"/household/pantry",
             data: $("form").serialize(),
-            success:(data)=>{$("table").append(generateRow(keys, data.entry));}
+            success:(data)=>{
+                $("table").append(generateRow(keys, data.entry))
+                clearPantryForm();
+            }
 
     });
 
@@ -87,7 +94,8 @@ function generateTable(tableData, keys){
     let tBody = $("<tbody></tbody>");
     tBody.on("click", "tr", function(){
         $(".selectedItem").removeClass();
-        $(this).toggleClass("selectedItem"); 
+        $(this).toggleClass("selectedItem");
+        prefillForm(); 
         return false;
     });
     table.append(tBody);
@@ -127,5 +135,21 @@ function validatePantryForm(){
     return true;
 }
 function clearPantryForm(){
-
+    for(let field of $("form input")){
+        $(field).val("");
+    }
+    $("form input").first().prop("readonly", false);
+}
+function prefillForm(){
+    let selected = $(".selectedItem").first();
+    let fieldText = [];
+    for(let child of selected.children("td")){
+        fieldText.push($(child).text());
+    }
+    let index = 0;
+    for(let field of $("form input")){
+        $(field).val(fieldText[index]);
+        index++;
+    }
+    $("form input").first().prop("readonly", true);
 }
