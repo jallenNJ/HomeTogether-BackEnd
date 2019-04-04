@@ -57,7 +57,26 @@ function loadPantry(pantryData){
     generateTable(pantryData, keys);
     generatePantryForm(keys);
 
-    body.append($("<button></button>").text("Delete"));
+    body.append($("<button></button>").text("Delete").on("click", ()=>{
+        let name = $("form input").first().val();
+        if(name === "" || name == undefined){
+            console.log("Attempting to deleted with nothing selected");
+            return;
+        }
+        let selected = $(".selectedItem");
+
+        $.ajax({
+            type:"delete",
+            url:"/household/pantry",
+            data: $("form").serialize(),
+            success:(data)=>{ 
+                selected.remove();
+                clearPantryForm();
+            }
+        });
+
+
+    }));
 
     body.append($("<button></button>").text("Clear").on("click", ()=>{
         clearPantryForm();

@@ -351,8 +351,9 @@ router.delete("/pantry", async (req, res, next) => {
 		return;
 	}
 
+	let deleteName = req.query.name || req.body.name;
 	//Ensure the name was given in the request
-	if (!req.query.name) {
+	if (!deleteName) {
 		console.log("No name specifed in delete" + JSON.stringify(req.query));
 		res.status(400).json({ message: "No item specifed" });
 		return;
@@ -360,7 +361,7 @@ router.delete("/pantry", async (req, res, next) => {
 
 	try {
 		//Delete that entry from the array and respond to user
-		await req.collections.households.updateOne({ _id: ObjectID(req.session.activeHousehold) }, { $pull: { "pantry": { "name": req.query.name } } });
+		await req.collections.households.updateOne({ _id: ObjectID(req.session.activeHousehold) }, { $pull: { "pantry": { "name": deleteName } } });
 		res.json({ message: "item deleted" });
 	} catch (ex) {
 		//If failed, give generic error to the user and full error to console.
