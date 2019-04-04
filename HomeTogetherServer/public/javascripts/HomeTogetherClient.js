@@ -45,7 +45,7 @@ function loadHouse(){
 
 function loadPantry(pantryData){
     body.empty();
-    let keys = ["name", "quanitity", "expires", "category", "tags"];
+    let keys = ["name", "quantity", "expires", "category", "tags"];
     generateTable(pantryData, keys);
    
 }
@@ -61,9 +61,7 @@ function generateTable(tableData, keys){
             let cell = rowData? $("<td></td>").text(rowData[key]):$("<th></th>").text(key); 
             row.append(cell);
         }
-        if(rowData){
-            row.on("click", (clicked)=>{$(clicked).toggleClass("selected");});
-        }
+
         return row;
 
     }
@@ -71,8 +69,10 @@ function generateTable(tableData, keys){
     tHead.append(generateRow(undefined));
     table.append(tHead);
     let tBody = $("<tbody></tbody>");
+    tBody.on("click", "tr", function(){$(this).toggleClass("selectedItem"); return false;});
     table.append(tBody);
     for(let rowData of tableData){
         tBody.append(generateRow(rowData));
     }
+   
 }
