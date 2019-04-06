@@ -1,1 +1,39 @@
+POST http://localhost:3000/login
+content-type: application/json
 
+{
+    "user": "bob",
+    "pass": "pass"
+}
+    
+###
+GET http://localhost:3000/household
+
+###
+GET http://localhost:3000/household?id=5c3a8fc4789920353cd17f18
+
+###
+GET http://localhost:3000/logout
+
+###
+
+http://localhost:3000/household
+
+###
+GET http://localhost:3000/users
+
+###
+GET http://localhost:3000/users?username=a
+
+###
+
+PUT  http://localhost:3000/household/member
+content-type: application/json
+
+{
+    "username":"sally"
+}
+
+###
+
+GET http://localhost:3000/users?resolveIds=5c37ff88cf3fe42f84afc750,5c7d714c4c6e7e1e28783bd1
