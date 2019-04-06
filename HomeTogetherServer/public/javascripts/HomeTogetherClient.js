@@ -53,7 +53,7 @@ function loadHouse(){
 function loadPantry(pantryData){
     body.empty();
     body.off("click");
-    let keys = ["name", "quantity", "expires", "category", "tags", "location"];
+    let keys = ["name", "quantity", "expires", "category", "location"];
     generateTable(pantryData, keys);
     generatePantryForm(keys);
 
