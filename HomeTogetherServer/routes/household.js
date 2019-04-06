@@ -430,7 +430,7 @@ router.put("/member", async (req, res, next) => {
  */
 function validatePantryFieldsExist(pantryItem, res) {
 	//The keys which must exist
-	let keys = ["name", "quantity", "expires", "category", "tags", "location"]
+	let keys = ["name", "quantity", "expires", "category", "location"]
 	//If any of them are missing, notify client of invalid request
 	for (key of keys) {
 		if (!pantryItem[key]) {
@@ -473,20 +473,6 @@ function formatPantryObject(pantryItem) {
 		res.status(400).json({ message: "Need to have atleast one of item" });
 		return false;
 	}
-
-	//Possibly add placeholder invalid value?
-	// if(!newEntry.category){
-
-	// }
-
-
-	let rawTags = pantryItem.tags;
-	//Split the tags on the commas, trim the extra whitespace, and remove duplicates to store only required data
-	newEntry.tags = rawTags.split(",")
-		.map((str) => { return str.trim() })
-		.filter((val, index, self) => {
-			return self.indexOf(val) == index && val.length;
-		});
 
 	return newEntry;
 
