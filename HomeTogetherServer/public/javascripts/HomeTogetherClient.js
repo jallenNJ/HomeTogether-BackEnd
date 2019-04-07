@@ -1,8 +1,8 @@
 var houseData = {};
-var body;
+var dynamicRoot;
 
 $(document).ready(()=>{
-    body = $("body");
+    dynamicRoot = $("#dynroot");
     const click = ()=>{
         $(document).off("keypress", click);
 
@@ -10,13 +10,13 @@ $(document).ready(()=>{
             "/login",
             $("form").serialize(),
             ()=>{  
-                body.empty();
+                dynamicRoot.empty();
 
                 $.get("/household",
                 null,
                 (data)=>{
                     for(house of data.households){
-                        $("<button></button>").text(house.name).data("id", house._id).on("click", selectHousehold).appendTo(body);
+                        $("<button></button>").text(house.name).data("id", house._id).on("click", selectHousehold).appendTo(dynamicRoot);
                     }
                 });
             });
@@ -41,15 +41,15 @@ function selectHousehold(){
 }
 
 function loadHouse(){
-    body.empty();
-    body.append($("<p> Do member bar</p>"));
-    body.append($("<button> Pantry </button>")).on("click", $.get("/household/pantry", {}, 
+    dynamicRoot.empty();
+    dynamicRoot.append($("<p> Do member bar</p>"));
+    dynamicRoot.append($("<button> Pantry </button>")).on("click", $.get("/household/pantry", {}, 
         (data)=>{  loadPantry(data.pantry)}));
 }
 
 function loadPantry(pantryData){
-    body.empty();
-    body.off("click");
+    dynamicRoot.empty();
+    dynamicRoot.off("click");
 
     const formatObject = {
         allKeys : ["name", "quantity", "expires", "category", "location"],
@@ -61,7 +61,7 @@ function loadPantry(pantryData){
     generateTable(pantryData, formatObject.allKeys);
     generatePantryForm(formatObject);
 
-    body.append($("<button></button>").text("Delete").on("click", ()=>{
+    dynamicRoot.append($("<button></button>").text("Delete").on("click", ()=>{
         let name = $("form input").first().val();
         if(name === "" || name == undefined){
             console.log("Attempting to deleted with nothing selected");
@@ -81,12 +81,12 @@ function loadPantry(pantryData){
 
     }));
 
-    body.append($("<button></button>").text("Clear").on("click", ()=>{
+    dynamicRoot.append($("<button></button>").text("Clear").on("click", ()=>{
         clearPantryForm();
         $(".selectedItem").removeClass("selectedItem");
     }));
 
-    body.append($("<button></button>").text("Update").on("click", ()=>{
+    dynamicRoot.append($("<button></button>").text("Update").on("click", ()=>{
         if(!validatePantryForm()){
             console.log("Implement handling on empty form on updated");
             return;
@@ -103,7 +103,7 @@ function loadPantry(pantryData){
         });
     }));
 
-    body.append($("<button></button>").text("Create").on("click", ()=>{
+    dynamicRoot.append($("<button></button>").text("Create").on("click", ()=>{
         if(!validatePantryForm()){
             console.log("Implement handling on empty form")
             return;
@@ -123,7 +123,7 @@ function loadPantry(pantryData){
 
 function generateTable(tableData, keys){
     let table = ($("<table></table>"));
-    body.append(table);
+    dynamicRoot.append(table);
    
     let tHead = $("<thead></thead>");
     tHead.append(generateRow(keys, undefined));
@@ -167,7 +167,7 @@ function generatePantryForm(formatObject){
         form.append(selectBuffer);    
     }
 
-    body.append(form);
+    dynamicRoot.append(form);
 }
 
 function validatePantryForm(){
