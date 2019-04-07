@@ -196,6 +196,7 @@ function clearPantryForm(){
     for(let field of $("#pantryForm input")){
         $(field).val("");
     }
+    
     $("form input").first().prop("readonly", false);
 }
 function prefillForm(){
@@ -205,9 +206,10 @@ function prefillForm(){
         fieldText.push($(child).text());
     }
     let index = 0;
-    for(let field of $("#pantryForm input")){
+    for(let field of $("#pantryForm input, #pantryForm select")){
         $(field).val(fieldText[index]);
         index++;
     }
+
     $("#pantryForm input").first().prop("readonly", true);
 }
