@@ -119,6 +119,35 @@ function loadPantry(pantryData){
             }
         });
     }));
+
+   let search = $("<div></div>").prop("id", "pantrySearchBar");
+    search.append($("<input></input>").attr("placeholder", "Type here to search").on("keyup", ()=>{console.log("Search here")}));
+    
+    for(let field of [formatObject.categories, formatObject.locations]){
+        search.append(createAndAddElementsToSelect(field).on("change", () =>{alert("Search now");}).hide());
+    }
+
+    search.append(createAndAddElementsToSelect(["Name", "Category", "Location"]).on("change",() => {
+        $("#pantrySearchBar input, #pantrySearchBar select").show();
+        switch($("#pantrySearchBar select").last().val()){
+            case "Category":
+            $("#pantrySearchBar input, #pantrySearchBar select:eq(1)").hide();
+            break;
+            case "Location":
+            $("#pantrySearchBar input, #pantrySearchBar select:eq(0)").hide();
+            break;
+            case "Name":
+            $("#pantrySearchBar select:eq(0), #pantrySearchBar select:eq(1)").hide();
+            default:
+
+        }
+
+
+
+    } ));
+    dynamicRoot.append(search);
+
+    //dynamicRoot.append($("<input></input>"))
 }
 
 function generateTable(tableData, keys){
@@ -160,14 +189,25 @@ function generatePantryForm(formatObject){
 
     let selectFields = [formatObject.categories, formatObject.locations]
     for(let option in selectFields){
-        let selectBuffer = $("<select></select").prop("name", formatObject.selectInputKeys[option]);
-        for(let item of selectFields[option]){
-            selectBuffer.append($("<option></option>").prop("value", item).text(item))
-        }
+        let selectBuffer = createAndAddElementsToSelect(selectFields[option], formatObject.selectInputKeys[option]);
         form.append(selectBuffer);    
     }
 
     dynamicRoot.append(form);
+}
+
+
+function createAndAddElementsToSelect(elements, selectName){
+    let selectBuffer = $("<select></select")
+    if(selectName){
+        selectBuffer.prop("name", selectName);
+    }
+
+    for(let item of elements){
+        selectBuffer.append($("<option></option>").prop("value", item).text(item))
+    }
+    return selectBuffer;
+
 }
 
 function validatePantryForm(){
