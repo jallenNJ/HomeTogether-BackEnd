@@ -53,9 +53,16 @@ function loadHouse(){
 function loadPantry(pantryData){
     body.empty();
     body.off("click");
-    let keys = ["name", "quantity", "expires", "category", "location"];
-    generateTable(pantryData, keys);
-    generatePantryForm(keys);
+
+    const formatObject = {
+        allKeys : ["name", "quantity", "expires", "category", "location"],
+        normalInputKeys : ["name", "quantity", "expires"],
+        selectInputKeys : ["category", "location"],
+        categories : ["Alcohol", "Beverage", "Grain", "Canned", "Frozen", "Fruit", "Vegetable", "Meat", "Ingredient", "Spice", "Seafood", "Other"],
+        locations : ["pantry", "fridge", "freezer"]
+    };
+    generateTable(pantryData, formatObject.allKeys);
+    generatePantryForm(formatObject);
 
     body.append($("<button></button>").text("Delete").on("click", ()=>{
         let name = $("form input").first().val();
@@ -94,7 +101,7 @@ function loadPantry(pantryData){
             url:"/household/pantry",
             data: $("form").serialize(),
             success:(data)=>{ 
-                selected.replaceWith(generateRow(keys, data.updated));
+                selected.replaceWith(generateRow(formatObject.allKeys, data.updated));
                 clearPantryForm();
             }
         });
@@ -111,7 +118,7 @@ function loadPantry(pantryData){
             url:"/household/pantry",
             data: $("form").serialize(),
             success:(data)=>{
-                $("table").append(generateRow(keys, data.entry))
+                $("table").append(generateRow(formatObject.allKeys, data.entry))
                 clearPantryForm();
             }
 
@@ -150,16 +157,28 @@ function generateRow (keys, rowData){
     return row;
 }
 
-function generatePantryForm(keys){
+function generatePantryForm(formatObject){
     let form = $("<form></form>");
     form.prop("id", "pantryForm");
-    for(let key of keys){
+    for(let key of formatObject.normalInputKeys){
         let id = "pf"+key;
         form.append($("<label></label>").prop("for", id).text(key));
         form.append($("<input></input>").prop("id", id).prop("name", key));
-
     }
+
+    let selectFields = [formatObject.categories, formatObject.locations]
+    for(let option in selectFields){
+        let selectBuffer = $("<select></select").prop("name", formatObject.selectInputKeys[option]);
+        for(let item of selectFields[option]){
+            selectBuffer.append($("<option></option>").prop("value", item).text(item))
+        }
+        form.append(selectBuffer);    
+    }
+    
     body.append(form);
+
+
+
 }
 
 function validatePantryForm(){
