@@ -121,7 +121,18 @@ function loadPantry(pantryData){
     }));
 
    let search = $("<div></div>").prop("id", "pantrySearchBar");
-    search.append($("<input></input>").attr("placeholder", "Type here to search").on("keyup", ()=>{console.log("Search here")}));
+    search.append($("<input></input>").attr("placeholder", "Type here to search").on("keyup", ()=>{
+        let searchTerm = $("#pantrySearchBar input").val().toLowerCase();
+        for(let row of $("tbody tr")){
+            let cell = $(row).children().first();
+           
+            if(cell.text().toLowerCase().includes(searchTerm)){
+                cell.parent().show();
+            } else{
+                cell.parent().hide();
+            }
+        }
+    }));
     
     for(let field of [formatObject.categories, formatObject.locations]){
         search.append(createAndAddElementsToSelect(field).on("change", () =>{alert("Search now");}).hide());
