@@ -9,21 +9,19 @@ $(document).ready(()=>{
         $.post(
             "/login",
             $("form").serialize(),
-            ()=>{
-                
+            ()=>{  
                 body.empty();
 
                 $.get("/household",
                 null,
                 (data)=>{
-
-                   // console.log(JSON.stringify(data));
                     for(house of data.households){
                         $("<button></button>").text(house.name).data("id", house._id).on("click", selectHousehold).appendTo(body);
                     }
                 });
             });
         }        
+
     $("button").on("click", click);
     $(document).on("keypress", (key)=>{
         if(key.which == 13){
@@ -45,9 +43,8 @@ function selectHousehold(){
 function loadHouse(){
     body.empty();
     body.append($("<p> Do member bar</p>"));
-    body.append($("<button> Pantry </button>")).on("click", $.get("/household/pantry", {}, (data)=>{ 
-        loadPantry(data.pantry)}
-        ));
+    body.append($("<button> Pantry </button>")).on("click", $.get("/household/pantry", {}, 
+        (data)=>{  loadPantry(data.pantry)}));
 }
 
 function loadPantry(pantryData){
@@ -82,7 +79,6 @@ function loadPantry(pantryData){
             }
         });
 
-
     }));
 
     body.append($("<button></button>").text("Clear").on("click", ()=>{
@@ -107,12 +103,12 @@ function loadPantry(pantryData){
         });
     }));
 
-
     body.append($("<button></button>").text("Create").on("click", ()=>{
         if(!validatePantryForm()){
             console.log("Implement handling on empty form")
             return;
         }
+
         $.ajax({
             type:"put",
             url:"/household/pantry",
@@ -121,11 +117,7 @@ function loadPantry(pantryData){
                 $("table").append(generateRow(formatObject.allKeys, data.entry))
                 clearPantryForm();
             }
-
-    });
-
-
-
+        });
     }));
 }
 
@@ -174,11 +166,8 @@ function generatePantryForm(formatObject){
         }
         form.append(selectBuffer);    
     }
-    
+
     body.append(form);
-
-
-
 }
 
 function validatePantryForm(){
@@ -196,7 +185,7 @@ function clearPantryForm(){
     for(let field of $("#pantryForm input")){
         $(field).val("");
     }
-    
+
     $("form input").first().prop("readonly", false);
 }
 function prefillForm(){
