@@ -200,10 +200,11 @@ function generateTable(tableData, keys){
 function generateRow (keys, rowData){
     let row = $("<tr></tr>");
     for(let key of keys){
+
+        let cell = rowData ? $("<td></td>").text(capitilizeWord(rowData[key])).data("form", rowData[key]):$("<th></th>").text(capitilizeWord(key));
         if(key == "expires" && rowData){
-            formatDate(rowData[key]);
+            cell.text(formatDate(rowData[key]));
         }
-        let cell = rowData ? $("<td></td>").text(rowData[key]):$("<th></th>").text(capitilizeWord(key)); 
         row.append(cell);
     }
     return row;
@@ -263,7 +264,7 @@ function prefillForm(){
     let selected = $(".selectedItem").first();
     let fieldText = [];
     for(let child of selected.children("td")){
-        fieldText.push($(child).text());
+        fieldText.push($(child).data("form"));
     }
     let index = 0;
     for(let field of $("#pantryForm input, #pantryForm select")){
