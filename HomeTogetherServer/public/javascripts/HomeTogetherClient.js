@@ -200,7 +200,10 @@ function generateTable(tableData, keys){
 function generateRow (keys, rowData){
     let row = $("<tr></tr>");
     for(let key of keys){
-        let cell = rowData ? $("<td></td>").text(rowData[key]):$("<th></th>").text(key); 
+        if(key == "expires" && rowData){
+            formatDate(rowData[key]);
+        }
+        let cell = rowData ? $("<td></td>").text(rowData[key]):$("<th></th>").text(capitilizeWord(key)); 
         row.append(cell);
     }
     return row;
@@ -290,9 +293,37 @@ function generateMemberBar(){
             houseData.members = [];
             //Name is the user object
             for(let name of data.names){
-                $("<button></button>").text(name.user).on("click", ()=>{alert("Implement member button on click");}).appendTo(memberDiv);
+                $("<button></button>").text(capitilizeWord(name.user)).on("click", ()=>{alert("Implement member button on click");}).appendTo(memberDiv);
                 houseData.members.push(name);
             }
         } 
     }).fail(()=>{alert("Failed to query users")});
+}
+
+function capitilizeWord(word){
+    return word.charAt(0).toUpperCase() + word.slice(1);
+}
+
+function formatDate(date){
+    let monthDayTokens = date.split(" ");
+    let month = monthDayTokens[0];
+    let day = monthDayTokens[1];
+    let year = date.split(", ")[1];
+    let monthFormatted;
+    switch (month){
+        case "0": monthFormatted = "January "; break;
+        case "1": monthFormatted = "Febuary "; break;
+        case "2": monthFormatted = "March ";break;
+        case "3": monthFormatted = "April ";break;
+        case "4": monthFormatted = "May ";break;
+        case "5": monthFormatted = "June ";break;
+        case "6": monthFormatted = "July ";break;
+        case "7": monthFormatted = "August ";break;
+        case "8": monthFormatted = "September ";break;
+        case "9": monthFormatted = "October ";break;
+        case "10": monthFormatted = "November";break;
+        case "11": monthFormatted = "December ";break;
+        default: monthFormatted ="Invalid ";
+    }
+    return monthFormatted + day + " " + year;
 }
