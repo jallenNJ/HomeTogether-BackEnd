@@ -203,7 +203,7 @@ function generateRow (keys, rowData){
 
         let cell = rowData ? $("<td></td>").text(capitilizeWord(rowData[key])).data("form", rowData[key]):$("<th></th>").text(capitilizeWord(key));
         if(key == "expires" && rowData){
-            cell.text(formatDate(rowData[key]));
+            cell.text(formatPantryDate(rowData[key]));
         }
         row.append(cell);
     }
@@ -216,7 +216,18 @@ function generatePantryForm(formatObject){
     for(let key of formatObject.normalInputKeys){
         let id = "pf"+key;
         form.append($("<label></label>").prop("for", id).text(key));
-        form.append($("<input></input>").prop("id", id).prop("name", key));
+        if(key == "expires"){
+            let expiresInput = $("<input></input>").prop("id", id).prop("name", key).datepicker({
+                dateFormat: "mm dd, yy"
+              });;
+            
+            expiresInput.prop("readonly", true);
+
+            form.append(expiresInput);
+        } else{
+            form.append($("<input></input>").prop("id", id).prop("name", key));
+        }
+        
     }
 
     let selectFields = [formatObject.categories, formatObject.locations]
@@ -305,7 +316,9 @@ function capitilizeWord(word){
     return word.charAt(0).toUpperCase() + word.slice(1);
 }
 
-function formatDate(date){
+
+//formatDate is taken
+function formatPantryDate(date){
     let monthDayTokens = date.split(" ");
     let month = monthDayTokens[0];
     let day = monthDayTokens[1];
