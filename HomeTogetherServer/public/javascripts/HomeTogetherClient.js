@@ -18,6 +18,23 @@ $(document).ready(()=>{
                     for(house of data.households){
                         $("<button></button>").text(house.name).data("id", house._id).on("click", selectHousehold).appendTo(dynamicRoot);
                     }
+                    if(data.households.length === 0){
+                        $("<p></p>").text("No active households found").appendTo(dynamicRoot);
+                    }
+                    $("<input></input>").prop("name", "name").prop("placeholder", "Enter a household name").appendTo(dynamicRoot);
+                    $("<button></button>").text("Create").on("click", ()=>{
+                        let val = $("input").val();
+                        if(!val){
+                            return;
+                        }
+                        $.ajax({
+                            type:"PUT",
+                            url:"/household",
+                            data:{name:val},
+                            success: ()=>{alert("DID A SIGNUP");}
+                        }).fail(()=>{alert("Failed to sign up");})
+
+                    }).appendTo(dynamicRoot);
                 });
             }}).fail(()=>{alert("Failed")});
         }        
