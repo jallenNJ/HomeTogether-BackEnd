@@ -5,7 +5,6 @@ $(document).ready(()=>{
     dynamicRoot = $("#dynroot");
     const click = (signUp)=>{
         $(document).off("keypress", click);
-
         $.ajax({
             type: signUp? "PUT":"POST",
             url:"/login",
@@ -23,10 +22,10 @@ $(document).ready(()=>{
             }}).fail(()=>{alert("Failed")});
         }        
     $("#signup").on("click", ()=>{click(true);});
-    $("#login").on("click", click);
+    $("#logIn").on("click", ()=>{click(false);});
     $(document).on("keypress", (key)=>{
         if(key.which == 13){
-            click()
+            click(false)
         }
     });    
 });
