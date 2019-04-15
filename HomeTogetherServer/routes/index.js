@@ -15,16 +15,12 @@ router.get('/', function (req, res, next) {
 
 
 /** 
- * @brief Returns true/false to the user if they are logged in
+ * @brief Returns true/false to the user if they are logged in, and the username if logged in
  *  
  */
 
 router.get('/authcheck', function (req, res, next) {
-	var returnVal = false;
-	if (req.session.username) {
-		returnVal = true;
-	}
-	res.json({ status: returnVal });
+	res.json({ status: req.session.username? true:false, user: req.session.username });
 
 })
 
@@ -103,7 +99,7 @@ router.post('/login', async function (req, res, next) {
 		if (match) { //If match, authenticate the user and update the sessions
 			req.session.username = username;
 			req.session.userId = user._id;
-			res.json({ message: "Login Successful" });
+			res.json({ message: "Login Successful", "user":username });
 			return;
 		} else { //Reject the request
 			res.status(401).json({ message: "Incorrect password" });

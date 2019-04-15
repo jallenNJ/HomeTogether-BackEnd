@@ -3,13 +3,14 @@ var dynamicRoot;
 
 $(document).ready(()=>{
     dynamicRoot = $("#dynroot");
-    const click = ()=>{
+    const click = (signUp)=>{
         $(document).off("keypress", click);
 
-        $.post(
-            "/login",
-            $("form").serialize(),
-            ()=>{  
+        $.ajax({
+            type: signUp? "PUT":"POST",
+            url:"/login",
+            data:$("form").serialize(),
+            success:()=>{  
                 dynamicRoot.empty();
 
                 $.get("/household",
@@ -19,10 +20,10 @@ $(document).ready(()=>{
                         $("<button></button>").text(house.name).data("id", house._id).on("click", selectHousehold).appendTo(dynamicRoot);
                     }
                 });
-            });
+            }}).fail(()=>{alert("Failed")});
         }        
-
-    $("button").on("click", click);
+    $("#signup").on("click", ()=>{click(true);});
+    $("#login").on("click", click);
     $(document).on("keypress", (key)=>{
         if(key.which == 13){
             click()
@@ -150,11 +151,7 @@ function loadPantry(pantryData){
             case "Name":
             $("#pantrySearchBar select:eq(0), #pantrySearchBar select:eq(1)").hide();
             default:
-
         }
-
-
-
     } ));
     dynamicRoot.append(search);
 

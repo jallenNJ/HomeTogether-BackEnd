@@ -10,3 +10,7 @@ a {
 .selectedItem{
   background-color: #FF0000
 }
+
+.searchExcluded{
+  visibility: none;
+}
