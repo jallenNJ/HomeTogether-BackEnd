@@ -312,16 +312,16 @@ function formatDate(date){
     let year = date.split(", ")[1];
     let monthFormatted;
     switch (month){
-        case "0": monthFormatted = "January "; break;
-        case "1": monthFormatted = "Febuary "; break;
-        case "2": monthFormatted = "March ";break;
-        case "3": monthFormatted = "April ";break;
-        case "4": monthFormatted = "May ";break;
-        case "5": monthFormatted = "June ";break;
-        case "6": monthFormatted = "July ";break;
-        case "7": monthFormatted = "August ";break;
-        case "8": monthFormatted = "September ";break;
-        case "9": monthFormatted = "October ";break;
+        case "0": case "00": monthFormatted = "January "; break;
+        case "1": case "01":monthFormatted = "Febuary "; break;
+        case "2": case "02":monthFormatted = "March ";break;
+        case "3": case "03":monthFormatted = "April ";break;
+        case "4": case "04":monthFormatted = "May ";break;
+        case "5": case "05":monthFormatted = "June ";break;
+        case "6": case "06":monthFormatted = "July ";break;
+        case "7": case "07":monthFormatted = "August ";break;
+        case "8": case "08":monthFormatted = "September ";break;
+        case "9": case "09":monthFormatted = "October ";break;
         case "10": monthFormatted = "November";break;
         case "11": monthFormatted = "December ";break;
         default: monthFormatted ="Invalid ";
