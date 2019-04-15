@@ -177,6 +177,11 @@ router.put('/', async (req, res, next) => {
 	try {
 		//Insert the object into the database. Add the default members
 		let name = data.name;
+		if(!name){
+			console.log("No name provided to household put" + JSON.stringify(data));
+			res.status(400).json({message:"No household name for key name"});
+			return;
+		}
 		await req.collections.households.insertOne(
 			{
 				name: name,
