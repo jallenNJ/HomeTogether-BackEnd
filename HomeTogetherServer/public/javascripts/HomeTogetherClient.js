@@ -59,14 +59,18 @@ function selectHousehold(){
 
 function loadHouse(){
     dynamicRoot.empty();
-    dynamicRoot.append($("<p> Do member bar</p>"));
-    dynamicRoot.append($("<button> Pantry </button>")).on("click", $.get("/household/pantry", {}, 
-        (data)=>{  loadPantry(data.pantry)}));
+//    dynamicRoot.append($("<button> Pantry </button>")).on("click", 
+ //       ()=>{
+            $.get("/household/pantry", {}, 
+            (data)=>{  loadPantry(data.pantry)});
+ //       }
+//    );
 }
 
 function loadPantry(pantryData){
     dynamicRoot.empty();
     dynamicRoot.off("click");
+    generateMemberBar();
 
     const formatObject = {
         allKeys : ["name", "quantity", "expires", "category", "location"],
@@ -265,4 +269,30 @@ function prefillForm(){
     }
 
     $("#pantryForm input").first().prop("readonly", true);
+}
+
+function generateMemberBar(){
+   let memberDiv =  $("<div></div>").prop("id","memberBar");
+    memberDiv.append($("<p></p>").text("Loading member data"));
+    dynamicRoot.append(memberDiv);
+    let csvNames= "";
+    for(let user of houseData.members){
+        csvNames += user+",";
+    }
+    csvNames = csvNames.substr(0, csvNames.length-1);
+    $.ajax({
+        type:"GET",
+        url:"/users",
+        data:{resolveIds:csvNames},
+        success: (data) => {
+            memberDiv.empty();
+            memberDiv.append($("<p></p>").text("Members: "));
+            houseData.members = [];
+            //Name is the user object
+            for(let name of data.names){
+                $("<button></button>").text(name.user).on("click", ()=>{alert("Implement member button on click");}).appendTo(memberDiv);
+                houseData.members.push(name);
+            }
+        } 
+    }).fail(()=>{alert("Failed to query users")});
 }

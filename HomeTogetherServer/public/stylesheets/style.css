@@ -14,3 +14,7 @@ a {
 .searchExcluded{
   visibility: none;
 }
+
+#memberBar p{
+  display: inline
+}
