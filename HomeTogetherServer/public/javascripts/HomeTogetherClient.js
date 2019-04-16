@@ -226,7 +226,8 @@ function generatePantryForm(formatObject){
     form.prop("id", "pantryForm");
     for(let key of formatObject.normalInputKeys){
         let id = "pf"+key;
-        form.append($("<label></label>").prop("for", id).text(key));
+        let group = $("<div></div>").addClass("formGroup");
+        group.append($("<label></label>").prop("for", id).text(capitilizeWord(key) + ": "));
         if(key == "expires"){
             let expiresInput = $("<input></input>").prop("id", id).prop("name", key).datepicker({
                 dateFormat: "mm dd, yy"
@@ -239,13 +240,14 @@ function generatePantryForm(formatObject){
                 expiresInput.data("form", expiresInput.val());
             })
             expiresInput.prop("readonly", true);
-            form.append(expiresInput);
+            group.append(expiresInput);
         } else{
-            form.append($("<input></input>").prop("id", id).prop("name", key));
+            group.append($("<input></input>").prop("id", id).prop("name", key));
         }
+        form.append(group);
         
     }
-
+    form.append($("<br />"));
     let selectFields = [formatObject.categories, formatObject.locations]
     for(let option in selectFields){
         let selectBuffer = createAndAddElementsToSelect(selectFields[option], formatObject.selectInputKeys[option]);
