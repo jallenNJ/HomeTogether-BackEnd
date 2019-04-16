@@ -8,6 +8,22 @@ h1, h2, h3{
   text-shadow: 1px, 1px, black;
 }
 
+#title{
+  margin-bottom: 50px;
+}
+#title img {
+  float: left;
+ width: 100px;
+  height: 100px;
+}
+
+#title h1 {
+  position: relative;
+  top: 50px;
+  left: 10px;
+  height: 50px;
+}
+
 button {
   border-width: 3px;
   border-radius: 2px;
