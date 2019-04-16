@@ -1,28 +1,33 @@
 body {
   padding: 50px;
   font: 14px "Lucida Grande", Helvetica, Arial, sans-serif;
-  background-color: #6b6e70;
+ /* background-color: #6b6e70;*/
+ background-image: url("/images/bg.png"); /*Background pattern from Toptal Subtle Patterns*/
+ background-repeat: repeat;
   color: #FFFFFF;
+  padding-bottom: 50vh;
 }
 h1, h2, h3{
   text-shadow: 1px, 1px, black;
 }
 
-#title{
+header{
   margin-bottom: 50px;
 }
-#title img {
+header img {
   float: left;
  width: 100px;
   height: 100px;
 }
 
-#title h1 {
+header h1 {
   position: relative;
   top: 50px;
   left: 10px;
   height: 50px;
 }
+
+
 
 button {
   border-width: 3px;
