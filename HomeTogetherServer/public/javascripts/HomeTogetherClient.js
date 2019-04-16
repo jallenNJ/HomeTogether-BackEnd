@@ -128,18 +128,23 @@ function loadPantry(pantryData){
         if(!validatePantryForm()){
             console.log("Implement handling on empty form")
             return;
-        }
+        }    
 
         $.ajax({
             type:"put",
             url:"/household/pantry",
-            data: $("form").serialize(),
+            data: $("form").serialize().replace("Never%20Expires", "11 31, 2099"),
             success:(data)=>{
                 $("table").append(generateRow(formatObject.allKeys, data.entry))
                 clearPantryForm();
             }
         });
     }));
+
+    dynamicRoot.append($("<button></button>").text("Never Expires").on("click", ()=>{
+        $("#pfexpires").val("Never Expires").data("form", "11 31, 2099");
+
+    }))
 
    let search = $("<div></div>").prop("id", "pantrySearchBar");
     search.append($("<input></input>").attr("placeholder", "Type here to search").on("keyup", ()=>{
@@ -221,8 +226,13 @@ function generatePantryForm(formatObject){
                 dateFormat: "mm dd, yy"
               });;
             
+            expiresInput.on("change", () =>{
+            
+                let date =  $(expiresInput).datepicker("getDate");
+                expiresInput.val(date.getMonth() + " " + date.getDay() + ", " + date.getFullYear());   
+                expiresInput.data("form", expiresInput.val());
+            })
             expiresInput.prop("readonly", true);
-
             form.append(expiresInput);
         } else{
             form.append($("<input></input>").prop("id", id).prop("name", key));
