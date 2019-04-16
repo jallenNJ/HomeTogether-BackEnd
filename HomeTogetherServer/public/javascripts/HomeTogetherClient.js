@@ -270,11 +270,16 @@ function createAndAddElementsToSelect(elements, selectName){
 
 function validatePantryForm(){
 
+    let index = 0;
     for(let field of $("#pantryForm input")){
+        if(index == 1 && isNaN($(field).val())){
+            return false;
+        }
         if($(field).val() === ""){
             console.log("False on " + $(field).prop("id"));
             return false;
         }
+        index++;
     }
 
     return true;
