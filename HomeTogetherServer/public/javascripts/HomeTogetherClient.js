@@ -1,6 +1,10 @@
 var houseData = {};
 var dynamicRoot;
 
+const neverExpireStr = "Never Expires";
+const neverExpireEscapedStr = "Never%20Expires";
+const neverExpireDate = "11 31, 2099";
+
 $(document).ready(()=>{
     dynamicRoot = $("#dynroot");
     const click = (signUp)=>{
@@ -116,7 +120,7 @@ function loadPantry(pantryData){
         $.ajax({
             type:"patch",
             url:"/household/pantry",
-            data: $("form").serialize(),
+            data: $("form").serialize().replace(neverExpireEscapedStr, neverExpireDate),
             success:(data)=>{ 
                 selected.replaceWith(generateRow(formatObject.allKeys, data.updated));
                 clearPantryForm();
@@ -133,7 +137,7 @@ function loadPantry(pantryData){
         $.ajax({
             type:"put",
             url:"/household/pantry",
-            data: $("form").serialize().replace("Never%20Expires", "11 31, 2099"),
+            data: $("form").serialize().replace(neverExpireEscapedStr, neverExpireDate),
             success:(data)=>{
                 $("table").append(generateRow(formatObject.allKeys, data.entry))
                 clearPantryForm();
@@ -141,8 +145,8 @@ function loadPantry(pantryData){
         });
     }));
 
-    dynamicRoot.append($("<button></button>").text("Never Expires").on("click", ()=>{
-        $("#pfexpires").val("Never Expires").data("form", "11 31, 2099");
+    dynamicRoot.append($("<button></button>").text(neverExpireStr).on("click", ()=>{
+        $("#pfexpires").val(neverExpireStr).data("form", neverExpireDate);
 
     }))
 
@@ -208,7 +212,8 @@ function generateRow (keys, rowData){
 
         let cell = rowData ? $("<td></td>").text(capitilizeWord(rowData[key])).data("form", rowData[key]):$("<th></th>").text(capitilizeWord(key));
         if(key == "expires" && rowData){
-            cell.text(formatPantryDate(rowData[key]));
+        
+            cell.text(rowData[key] != neverExpireDate?formatPantryDate(rowData[key]): neverExpireStr);
         }
         row.append(cell);
     }
