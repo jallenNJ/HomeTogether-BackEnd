@@ -21,6 +21,7 @@ $(document).ready(()=>{
                 (data)=>{
                     for(house of data.households){
                         $("<button></button>").text(house.name).data("id", house._id).on("click", selectHousehold).appendTo(dynamicRoot);
+                        dynamicRoot.append($("<br />"));
                     }
                     if(data.households.length === 0){
                         $("<p></p>").text("No active households found").appendTo(dynamicRoot);
@@ -272,7 +273,7 @@ function validatePantryForm(){
 
     let index = 0;
     for(let field of $("#pantryForm input")){
-        if(index == 1 && isNaN($(field).val())){
+        if(index == 1 && (isNaN($(field).val()|| $(field).val() <1))){
             return false;
         }
         if($(field).val() === ""){
