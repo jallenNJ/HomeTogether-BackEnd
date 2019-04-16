@@ -289,11 +289,18 @@ function clearPantryForm(){
 function prefillForm(){
     let selected = $(".selectedItem").first();
     let fieldText = [];
+    let childCount = 0;
     for(let child of selected.children("td")){
+        childCount++;
+        if(childCount == 3){
+            fieldText.push($(child).data("form") == neverExpireDate? neverExpireStr:$(child).data("form"));
+            continue;
+        }
         fieldText.push($(child).data("form"));
     }
     let index = 0;
     for(let field of $("#pantryForm input, #pantryForm select")){
+
         $(field).val(fieldText[index]);
         index++;
     }
