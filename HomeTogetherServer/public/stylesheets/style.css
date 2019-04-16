@@ -1,6 +1,8 @@
 body {
   padding: 50px;
   font: 14px "Lucida Grande", Helvetica, Arial, sans-serif;
+  background-color: #6b6e70;
+  color: #FFFFFF;
 }
 
 a {
@@ -15,6 +17,38 @@ a {
   visibility: none;
 }
 
+.formElement{
+  display:block;
+}
+
 #memberBar p{
   display: inline
+}
+
+table {
+  border-width: 5px;
+  border-color: #FFFFFF;
+  border-style: ridge;
+}
+
+thead tr th{
+  border-right-width: 1px;
+  border-bottom-width: 5px;
+  border-color: #FFFFFF;
+  border-bottom-style: groove;
+  border-right-style: dashed; 
+}
+
+tbody tr td {
+  border-width: 1px;
+  border-color: #FFFFFF;
+  border-bottom-style: dashed;
+  border-right-style: dashed; 
+ 
+}
+tbody tr:last-child td{
+  border-bottom-style: none
+}
+tbody tr td:last-child{
+  border-right-style: none; 
 }
