@@ -365,7 +365,7 @@ function formatPantryDate(date){
         case "7": case "07":monthFormatted = "August ";break;
         case "8": case "08":monthFormatted = "September ";break;
         case "9": case "09":monthFormatted = "October ";break;
-        case "10": monthFormatted = "November";break;
+        case "10": monthFormatted = "November ";break;
         case "11": monthFormatted = "December ";break;
         default: monthFormatted ="Invalid ";
     }
