@@ -357,11 +357,12 @@ function generatePantryForm(formatObject){
             
             expiresInput.on("change", () =>{
                 
+                let date =  $(expiresInput).val();
+                let dateSplit = date.split(" ");
+                let rawFormat = dateSplit[0]-1 + " "+ dateSplit[1] +" " + dateSplit[2];
 
-                //TODO: move text to box, and put formatted data in val
-                let date =  $(expiresInput).datepicker("getDate");
-                expiresInput.val(date.getMonth() + " " + date.getDay() + ", " + date.getFullYear());   
-                expiresInput.data("form", expiresInput.val());
+                expiresInput.val(formatPantryDate(rawFormat));   
+                expiresInput.data("form", rawFormat);
             })
             //Ensure the user cannot edit the field to prevent unneeded rejection
             expiresInput.prop("readonly", true);
@@ -457,7 +458,7 @@ function prefillForm(){
             //TODO: FORMAT DATE HERE IF ON CHANGE DOESN'T COVER IT
             fieldText.push($(child).data("form") == neverExpireDate
             ? neverExpireStr
-            :$(child).data("form"));
+            :formatPantryDate($(child).data("form")));
             continue;
         }
         fieldText.push($(child).data("form"));
