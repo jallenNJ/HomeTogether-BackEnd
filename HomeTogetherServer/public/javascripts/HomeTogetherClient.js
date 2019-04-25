@@ -245,14 +245,13 @@ function loadPantry(pantryData){
     
 
     
-    let rowFinder = [(row)=>{return $(row).children().eq(4)},(row)=>{return $(row).children().eq(3)}];
+    const rowFinder = [(row)=>{return $(row).children().eq(3)},(row)=>{return $(row).children().eq(4)}];
     //Generate the selection boxes
     for(let field of [formatObject.categories, formatObject.locations]){
         search.append(createAndAddElementsToSelect(field).on("change", (node) =>{
-            
             searchPantryTable(
-                rowFinder.pop(),
-                (cell)=>{return cell.text().toLowerCase().includes($(node.target).val().toLowerCase())}
+                rowFinder[$(node.target).index()-1],
+                (cell)=>{ return cell.text().toLowerCase() === $(node.target).val().toLowerCase()}
             )
         
         
@@ -266,18 +265,25 @@ function loadPantry(pantryData){
         $("#pantrySearchBar input").val("");
         clearPantryForm();
         $(".selectedItem").removeClass("selectedItem");
-        searchPantryTable();
+        let selected;
         switch($("#pantrySearchBar select").last().val()){
             case "Category": //Hide name and location
             $("#pantrySearchBar input, #pantrySearchBar select:eq(1)").hide();
+            selected = $("#pantrySearchBar select:eq(0)");
             break;
             case "Location": //Hide name and category
             $("#pantrySearchBar input, #pantrySearchBar select:eq(0)").hide();
+            selected = $("#pantrySearchBar select:eq(1)");
             break;
             case "Name": //Hide the select boxes
             $("#pantrySearchBar select:eq(0), #pantrySearchBar select:eq(1)").hide();
+            searchPantryTable();
             default:
         }
+        if(selected){
+            selected.trigger("change", selected);
+        }
+        
     } ));
     dynamicRoot.append(search);
 }
