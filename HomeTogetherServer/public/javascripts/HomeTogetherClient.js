@@ -191,6 +191,7 @@ function loadPantry(pantryData){
         }
         //Cache the selected item in case the user clicks elsewhere
         let selected = $(".selectedItem");
+        $("#pfexpires").val($("#pfexpires").data("form"));
         $.ajax({
             type:"patch",
             url:"/household/pantry",
@@ -213,6 +214,7 @@ function loadPantry(pantryData){
             return;
         }    
 
+        $("#pfexpires").val($("#pfexpires").data("form"));
         //Send the request to add
         $.ajax({
             type:"put",
