@@ -55,10 +55,19 @@ a {
 
 .formGroup{
   display:inline-block;
+  margin: 2px;
+}
+
+form select{
+  margin: 5px;
 }
 
 #memberBar p{
   display: inline
+}
+
+#memberBar button{
+  margin-left:10px;
 }
 
 form{
@@ -77,6 +86,7 @@ table {
   margin: 1%;
   min-width: 25%;
   max-width: 50%;
+  float: right;
  
 }
 
@@ -105,4 +115,11 @@ tbody tr:last-child td{
 }
 tbody tr td:last-child{
   border-right-style: none; 
+}
+
+#pantryCrudBar{
+  margin:5px;
+}
+#pantryCrudBar button {
+  margin-left: 5px;
 }

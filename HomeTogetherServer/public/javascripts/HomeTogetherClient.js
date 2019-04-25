@@ -145,9 +145,12 @@ function loadPantry(pantryData){
 
     //TODO: Make buttons toggle correctly, and maybe store in array
 
+
+    let barDiv = $("<div></div>").prop("id", "pantryCrudBar");
+    dynamicRoot.append(barDiv);
     //Binding of the buttons
     //Delete button, which deletes the currently selected entry
-    dynamicRoot.append($("<button></button>").text("Delete").on("click", ()=>{
+    barDiv.append($("<button></button>").text("Delete").on("click", ()=>{
         //Get the na,e
         let name = $("form input").first().val();
         //Ensure it is a valid object
@@ -173,14 +176,14 @@ function loadPantry(pantryData){
     }));
 
     //Clear button to clear what is selected
-    dynamicRoot.append($("<button></button>").text("Clear").on("click", ()=>{
+    barDiv.append($("<button></button>").text("Clear").on("click", ()=>{
         //Empty the form and make all selectedItems unselected
         clearPantryForm();
         $(".selectedItem").removeClass("selectedItem");
     }));
 
     //Button to update the selected item with the item in the form
-    dynamicRoot.append($("<button></button>").text("Update").on("click", ()=>{
+    barDiv.append($("<button></button>").text("Update").on("click", ()=>{
         //Ensure form is filled in with potentially valid data
         if(!validatePantryForm()){
             console.log("Implement handling on empty form on updated");
@@ -203,7 +206,7 @@ function loadPantry(pantryData){
     }));
 
     //Button to create a new entry from the form
-    dynamicRoot.append($("<button></button>").text("Create").on("click", ()=>{
+    barDiv.append($("<button></button>").text("Create").on("click", ()=>{
         //Ensure all fields have atleast potentially valid data
         if(!validatePantryForm()){
             console.log("Implement handling on empty form")
@@ -226,7 +229,7 @@ function loadPantry(pantryData){
     }));
 
     //Set current item to never expire
-    dynamicRoot.append($("<button></button>").text(neverExpireStr).on("click", ()=>{
+    barDiv.append($("<button></button>").text(neverExpireStr).on("click", ()=>{
         $("#pfexpires").val(neverExpireStr).data("form", neverExpireDate);
 
     }))
@@ -234,31 +237,26 @@ function loadPantry(pantryData){
     //Create the search option
    let search = $("<div></div>").prop("id", "pantrySearchBar");
    //Create the input box, and on key up search
-    search.append($("<input></input>").attr("placeholder", "Type here to search").on("keyup", ()=>{
-        //Get the input and force to lowercase
-        let searchTerm = $("#pantrySearchBar input").val().toLowerCase();
-        //For every row in the body
-        for(let row of $("tbody tr")){
-            //Get the name of the cell
-            let cell = $(row).children().first();
-           //Get the text as lowcase, and if the searchTerm is a substring, show it; else hide
-            if(cell.text().toLowerCase().includes(searchTerm)){
-                cell.parent().show();
-            } else{
-                cell.parent().hide();
-            }
-        }
-    }));
+    search.append($("<input></input>").attr("placeholder", "Type here to search").on("keyup",()=>{
+        searchPantryTable(
+            (row)=>{return $(row).children().first();}, 
+            (cell)=>{return cell.text().toLowerCase().includes($("#pantrySearchBar input").val().toLowerCase())})
+    } ));
     
     //Generate the selection boxes
     for(let field of [formatObject.categories, formatObject.locations]){
-        search.append(createAndAddElementsToSelect(field).on("change", () =>{alert("Search now");}).hide());
+        search.append(createAndAddElementsToSelect(field).on("change", () =>{
+            alert("Search now");}).hide());
     }
 
     //Logic to show which search terms
     search.append(createAndAddElementsToSelect(["Name", "Category", "Location"]).on("change",() => {
         //Show all
         $("#pantrySearchBar input, #pantrySearchBar select").show();
+        $("#pantrySearchBar input").val("");
+        clearPantryForm();
+        $(".selectedItem").removeClass("selectedItem");
+        searchPantryTable();
         switch($("#pantrySearchBar select").last().val()){
             case "Category": //Hide name and location
             $("#pantrySearchBar input, #pantrySearchBar select:eq(1)").hide();
@@ -273,6 +271,30 @@ function loadPantry(pantryData){
     } ));
     dynamicRoot.append(search);
 }
+
+
+function searchPantryTable(findCell, searchCondition){
+    if(findCell == undefined){
+        findCell = (row)=>{return $(row).children().first();};
+    }
+    if(searchCondition == undefined){
+        searchCondition = ()=>{return true;};
+    }
+    //Get the input and force to lowercase
+    //let searchTerm = $("#pantrySearchBar input").val().toLowerCase();
+    //For every row in the body
+    for(let row of $("tbody tr")){
+        //Get the name of the cell
+        let cell = findCell(row);
+       //Get the text as lowcase, and if the searchTerm is a substring, show it; else hide
+        if(searchCondition(cell)){
+            cell.parent().show();
+        } else{
+            cell.parent().hide();
+        }
+    }
+}
+
 
 /**
  * @brief This function generates a table for the pantry scene
