@@ -243,10 +243,20 @@ function loadPantry(pantryData){
             (cell)=>{return cell.text().toLowerCase().includes($("#pantrySearchBar input").val().toLowerCase())})
     } ));
     
+
+    
+    let rowFinder = [(row)=>{return $(row).children().eq(4)},(row)=>{return $(row).children().eq(3)}];
     //Generate the selection boxes
     for(let field of [formatObject.categories, formatObject.locations]){
-        search.append(createAndAddElementsToSelect(field).on("change", () =>{
-            alert("Search now");}).hide());
+        search.append(createAndAddElementsToSelect(field).on("change", (node) =>{
+            
+            searchPantryTable(
+                rowFinder.pop(),
+                (cell)=>{return cell.text().toLowerCase().includes($(node.target).val().toLowerCase())}
+            )
+        
+        
+        }).hide());
     }
 
     //Logic to show which search terms
