@@ -9,6 +9,7 @@ var path = require('path');
 var cookieParser = require('cookie-parser');
 const ex_session = require('express-session');
 const ip = require("ip");
+const lessMiddleware = require('less-middleware');
 var logger = require('morgan');
 
 const MongoClient = require('mongodb').MongoClient;
@@ -33,6 +34,7 @@ app.use(express.json());
 app.use(express.urlencoded({ extended: false }));
 app.use(cookieParser("homeTogether"));
 app.use(ex_session({ secret: 'homeTogether', resave: false, saveUninitialized: false })); //If touch/rolling is enabled, set resave to true
+app.use(lessMiddleware(path.join(__dirname, 'public')));
 app.use(express.static(path.join(__dirname, 'public')));
 
 
