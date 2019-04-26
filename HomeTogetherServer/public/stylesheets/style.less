@@ -1,9 +1,13 @@
+@fontColor: #FFFFFF;
+@linkColor: #00B7FF;
+@selectedColor: #FF0000;
+
 body {
 	padding: 50px;
 	font: 14px "Lucida Grande", Helvetica, Arial, sans-serif;
 	background-image: url("/images/bg.png"); /*Background pattern from Toptal Subtle Patterns*/
 	background-repeat: repeat;
-	color: #FFFFFF;
+	color: @fontColor;
 	padding-bottom: 50vh;
 }
 h1, h2, h3{
@@ -41,11 +45,11 @@ input{
 }
 
 a {
-	color: #00B7FF;
+	color:@linkColor;
 }
 
 .selectedItem{
-  	background-color: #FF0000
+  	background-color: @selectedColor;
 }
 
 .formGroup{
@@ -76,7 +80,7 @@ label{
 
 table {
   border-width: 5px;
-  border-color: #FFFFFF;
+  border-color: @fontColor;
   border-style: ridge;
   margin: 1%;
   min-width: 25%;
@@ -88,7 +92,7 @@ table {
 		  th{
 			border-right-width: 1px;
 			border-bottom-width: 5px;
-			border-color: #FFFFFF;
+			border-color: @fontColor;
 			border-bottom-style: groove;
 			border-right-style: dashed; 
 		  }
@@ -98,7 +102,7 @@ table {
 		tr{
 			td{
 				border-width: 1px;
-				border-color: #FFFFFF;
+				border-color: @fontColor;
 				border-bottom-style: dashed;
 				border-right-style: dashed; 
 				text-align: center;
