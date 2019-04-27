@@ -280,12 +280,18 @@ router.put('/pantry', async (req, res, next) => {
 
 	try {
 		//Update the household to contain the new pantry information
+		let search = await req.collections.households.findOne({ _id: ObjectID(req.session.activeHousehold), "pantry.name": newEntry.name});
+		if(search){
+			res.status(409).json({message: "Item already exists"});
+			return;
+		} 
 		await req.collections.households.updateOne({ _id: ObjectID(req.session.activeHousehold) }, { $push: { pantry: newEntry } });
-		res.json({ entry: newEntry });
+		
 	} catch (ex) {
 		console.error(ex);
 		res.status(500).json({ message: "Failed to insert" });
 	}
+	res.json({ entry: newEntry });
 });
 
 
