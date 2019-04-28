@@ -34,6 +34,31 @@ router.get('/', async (req, res, next) => {
 	res.json({ status: true, users: users });
 
 });
+
+router.patch('/', async(req,res,next) =>{
+
+	if(!req.body.dbKey || !req.body.dbVal){
+		res.status(400).json({message:"missing field"});
+		return;
+	}
+	//TODO: check if key is valid
+	let key = req.body.dbKey;
+	let val = req.body.dbVal;
+	let data = {};
+	data[key] = val;
+
+	try{
+		await req.collections.users.updateOne( {_id:ObjectID(req.session.userId)}, {$set:data} );	
+	}catch(ex){
+		res.status(500).json({status:false});
+		return;
+	}
+	res.status(200).json({status:true});
+	
+})
+
+
+
 /**
  * @brief Converts A commaseperated string of MongoIds to their usernames
  * @param idString {String} the MongoID to resolve, in the form a comma seperated string
