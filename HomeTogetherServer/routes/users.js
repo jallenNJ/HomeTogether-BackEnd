@@ -49,11 +49,13 @@ router.patch('/', async(req,res,next) =>{
 
 	try{
 		await req.collections.users.updateOne( {_id:ObjectID(req.session.userId)}, {$set:data} );	
+		var updatedUser= await req.collections.users.findOne({_id:ObjectID(req.session.userId)});
 	}catch(ex){
 		res.status(500).json({status:false});
 		return;
 	}
-	res.status(200).json({status:true});
+	
+	res.status(200).json({user:updatedUser});
 	
 })
 
