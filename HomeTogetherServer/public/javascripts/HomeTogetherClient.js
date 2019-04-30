@@ -21,6 +21,19 @@ $(document).ready(()=>{
      * @brief Handler for events which cause a sign-in or a log in
      * @param signUp If truthy, the user is signing up, otherwise logging in
      */
+
+     $.get({
+         type:"GET",
+         url:"/authcheck",
+         data:{},
+         success:(response)=>{
+             if(response.status){
+                 alert("GOOD");
+             } else{
+                 alert("BAD");
+             }
+         }
+     })
    
     const click = (signUp)=>{
         //Remove the keypress listners on the document, if they exist
@@ -127,8 +140,7 @@ function loadPantry(pantryData){
     //Clear all elements, and remove remaining listeners
     dynamicRoot.empty();
     dynamicRoot.off("click");
-    //Create the member bar and attach
-    generateMemberBar();
+
 
     //The format object containing all constants to be consitent with the app
     const formatObject = {
@@ -140,6 +152,8 @@ function loadPantry(pantryData){
     };
     //Create the table and the form
     generateTable(pantryData, formatObject.allKeys);
+    //Create the member bar and attach
+    generateMemberBar();
     generatePantryForm(formatObject);
 
 
