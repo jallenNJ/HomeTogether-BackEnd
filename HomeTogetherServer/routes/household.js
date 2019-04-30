@@ -96,7 +96,6 @@ async function allHouseQuery(req, res, next) {
 
 		//Get the names and Ids of all households the user is in
 		var result = await req.collections.households.find({ members: req.session.userId }, { name: 1 }).toArray();
-		console.log(result);
 	} catch (ex) {
 
 		//If error, return the empty list for no houses
