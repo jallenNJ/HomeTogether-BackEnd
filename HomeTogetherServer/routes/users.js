@@ -7,7 +7,6 @@ var express = require('express');
 var router = express.Router();
 const ObjectID = require('mongodb').ObjectID
 
-/* GET users listing. */
 /**
  * @brief Get user ids that match string, or convert and id to a name
  */

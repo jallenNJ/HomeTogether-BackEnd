@@ -18,12 +18,6 @@ $(document).ready(()=>{
     //Get the dynamic root element
     dynamicRoot = $("#dynroot");
     $("#logOut").hide()
-    //This needs to move
-    /**
-     * @brief Handler for events which cause a sign-in or a log in
-     * @param signUp If truthy, the user is signing up, otherwise logging in
-     */
-
 
      const moveToNext = ()=>{ //If log in was successful
         $("#logOut").on("click", ()=>{
@@ -90,6 +84,10 @@ $(document).ready(()=>{
          }
      })
    
+    /**
+     * @brief Handler for events which cause a sign-in or a log in
+     * @param signUp If truthy, the user is signing up, otherwise logging in
+     */
     const click = (signUp)=>{
         //Remove the keypress listners on the document, if they exist
         $(document).off("keypress", click);
