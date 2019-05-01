@@ -17,21 +17,76 @@ const neverExpireDate = "11 31, 2099";
 $(document).ready(()=>{
     //Get the dynamic root element
     dynamicRoot = $("#dynroot");
+    $("#logOut").hide()
+    //This needs to move
     /**
      * @brief Handler for events which cause a sign-in or a log in
      * @param signUp If truthy, the user is signing up, otherwise logging in
      */
+
+
+     const moveToNext = ()=>{ //If log in was successful
+        $("#logOut").on("click", ()=>{
+            $.get("/logout",
+            null,
+            location.reload(true)
+            );
+        }).show();
+        
+        //Clear the log in form
+        dynamicRoot.empty();
+
+        //Send a get to the household route to get all the houses a user is in
+        $.get("/household",
+        null, //No params are neded
+        (data)=>{ //On success function
+
+            //For every household the user is in
+            for(house of data.households){
+                /*
+                * Creates a button with the text of the house name, and a data element id:house's id
+                * with an onclick to call the selectHousehold function, then add it the root
+                *
+                */
+                $("<button></button>").text(house.name).data("id", house._id).on("click", selectHousehold).appendTo(dynamicRoot);
+                dynamicRoot.append($("<br />"));
+            }
+            //If there were no houses, add a text output
+            if(data.households.length === 0){
+                $("<p></p>").text("No active households found").appendTo(dynamicRoot);
+            }
+            //Create the input field for creating a house
+            $("<input></input>").prop("name", "name").prop("placeholder", "Enter a household name").appendTo(dynamicRoot);
+            //And create a button to submit that household
+            $("<button></button>").text("Create").on("click", ()=>{
+                //If box is empty, return
+                let val = $("input").val();
+                if(!val){
+                    return;
+                }
+
+                //Send the request to sign up the household
+                $.ajax({
+                    type:"PUT",
+                    url:"/household",
+                    data:{name:val},
+                    success: moveToNext
+                }).fail(()=>{alert("Failed to sign up");})
+
+            }).appendTo(dynamicRoot);
+        });
+    };
 
      $.get({
          type:"GET",
          url:"/authcheck",
          data:{},
          success:(response)=>{
-             if(response.status){
-                 alert("GOOD");
-             } else{
-                 alert("BAD");
-             }
+             if(!response.status){
+                 return;
+             } 
+             moveToNext();
+             
          }
      })
    
@@ -44,50 +99,7 @@ $(document).ready(()=>{
             type: signUp? "PUT":"POST",
             url:"/login",
             data:$("form").serialize(),
-            success:()=>{ //If log in was successful
-                //Clear the log in form
-                dynamicRoot.empty();
-
-                //Send a get to the household route to get all the houses a user is in
-                $.get("/household",
-                null, //No params are neded
-                (data)=>{ //On success function
-
-                    //For every household the user is in
-                    for(house of data.households){
-                        /*
-                        * Creates a button with the text of the house name, and a data element id:house's id
-                        * with an onclick to call the selectHousehold function, then add it the root
-                        *
-                        */
-                        $("<button></button>").text(house.name).data("id", house._id).on("click", selectHousehold).appendTo(dynamicRoot);
-                        dynamicRoot.append($("<br />"));
-                    }
-                    //If there were no houses, add a text output
-                    if(data.households.length === 0){
-                        $("<p></p>").text("No active households found").appendTo(dynamicRoot);
-                    }
-                    //Create the input field for creating a house
-                    $("<input></input>").prop("name", "name").prop("placeholder", "Enter a household name").appendTo(dynamicRoot);
-                    //And create a button to submit that household
-                    $("<button></button>").text("Create").on("click", ()=>{
-                        //If box is empty, return
-                        let val = $("input").val();
-                        if(!val){
-                            return;
-                        }
-
-                        //Send the request to sign up the household
-                        $.ajax({
-                            type:"PUT",
-                            url:"/household",
-                            data:{name:val},
-                            success: ()=>{alert("DID A SIGNUP");}
-                        }).fail(()=>{alert("Failed to sign up");})
-
-                    }).appendTo(dynamicRoot);
-                });
-            }}).fail(()=>{alert("Failed")});
+            success:moveToNext}).fail(()=>{alert("Failed")});
         }     
         
     //Bind the on click lisntered to the given signUp and logIn buttons
