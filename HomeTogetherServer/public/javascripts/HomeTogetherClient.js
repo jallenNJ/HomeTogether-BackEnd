@@ -97,7 +97,7 @@ $(document).ready(()=>{
             type: signUp? "PUT":"POST",
             url:"/login",
             data:$("form").serialize(),
-            success:moveToNext}).fail(()=>{alert("Failed")});
+            success:signUp?()=>{click(false)}:moveToNext}).fail(()=>{alert("Failed")});
         }     
         
     //Bind the on click lisntered to the given signUp and logIn buttons
